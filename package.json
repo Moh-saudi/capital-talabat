@@ -21,7 +21,8 @@
     "test:native-api": "node --test tests/server-native.test.mjs",
     "test:compiled-api": "node --test tests/server-compiled.test.mjs",
     "test:public-service": "node --import tsx --test tests/public-service.test.ts",
-    "test:public-web": "node tests/public-service.browser.mjs"
+    "test:public-web": "node tests/public-service.browser.mjs",
+    "test:admin-layout": "node tests/admin-layout.browser.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1154.0",

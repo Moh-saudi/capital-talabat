@@ -1,4 +1,4 @@
-name: Public storefront preview checks
+name: Website and dashboard preview checks
 on:
   push:
     branches: ['preview/brand-whatsapp-service']
@@ -25,4 +25,5 @@ jobs:
           VERCEL_ENV: preview
       - run: npx playwright install --with-deps chromium
       - run: npm run test:public-web
+      - run: npm run test:admin-layout
       - run: node tests/pwa-build.browser.mjs

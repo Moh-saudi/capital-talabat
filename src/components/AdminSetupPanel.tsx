@@ -60,7 +60,7 @@ export function AdminSetupPanel({
   return (
     <details
       open={defaultOpen || undefined}
-      className="max-w-6xl mx-auto my-4 p-4 bg-white text-slate-900 border rounded-2xl"
+      className="admin-settings max-w-6xl mx-auto my-4 p-4 bg-white text-slate-900 border rounded-2xl"
       dir="rtl"
     >
       <summary className="font-bold cursor-pointer">
@@ -86,7 +86,7 @@ export function AdminSetupPanel({
       <div className="grid md:grid-cols-2 gap-6 mt-4">
         <form
           key={editingStaff?.id || "new-staff"}
-          className="space-y-2"
+          className="admin-settings-form"
           onSubmit={(e) =>
             save(e, async (data) => {
               const uid = String(data.get("uid")).trim();
@@ -113,7 +113,7 @@ export function AdminSetupPanel({
             يجب أن يسجل الشخص حسابًا حقيقيًا أولًا. انسخ UID من صفحة حسابه أو
             خدمة الحسابات.
           </p>
-          <input
+          <label className="admin-form-field"><span>UID الموظف</span><input
             aria-label="UID الموظف"
             name="uid"
             defaultValue={editingStaff?.id}
@@ -122,16 +122,16 @@ export function AdminSetupPanel({
             dir="ltr"
             required
             className={input}
-          />
-          <input
+          /></label>
+          <label className="admin-form-field"><span>اسم الموظف</span><input
             defaultValue={editingStaff?.name}
             aria-label="اسم الموظف"
             name="name"
             placeholder="اسم الموظف"
             required
             className={input}
-          />
-          <input
+          /></label>
+          <label className="admin-form-field"><span>هاتف الموظف</span><input
             defaultValue={editingStaff?.phone}
             aria-label="هاتف الموظف"
             name="phone"
@@ -139,12 +139,12 @@ export function AdminSetupPanel({
             type="tel"
             required
             className={input}
-          />
-          <select aria-label="صلاحية الموظف" name="role" defaultValue={editingStaff?.role || "courier"} className={input}>
+          /></label>
+          <label className="admin-form-field"><span>صلاحية الموظف</span><select aria-label="صلاحية الموظف" name="role" defaultValue={editingStaff?.role || "courier"} className={input}>
             <option value="courier">مندوب</option>
             <option value="restaurant">مدير مطعم</option>
-          </select>
-          <select
+          </select></label>
+          <label className="admin-form-field"><span>المتجر المسؤول عنه</span><select
             defaultValue={editingStaff?.storeId || ""}
             aria-label="المتجر المسؤول عنه"
             name="store"
@@ -156,7 +156,7 @@ export function AdminSetupPanel({
                 {s.name}
               </option>
             ))}
-          </select>
+          </select></label>
           <button
             disabled={busy}
             className="bg-slate-900 text-white p-2 rounded-xl"
@@ -170,7 +170,7 @@ export function AdminSetupPanel({
         </form>
         <form
           key={editingCoupon?.code || "new-coupon"}
-          className="space-y-2"
+          className="admin-settings-form"
           onSubmit={(e) =>
             save(e, (data) => {
               const code = String(data.get("code")).toUpperCase();
@@ -191,8 +191,8 @@ export function AdminSetupPanel({
           }
         >
           <h3 className="font-bold">{editingCoupon ? "تعديل كود الخصم" : "إضافة كود خصم"}</h3>
-          <select aria-label="نوع الخصم" name="discountType" defaultValue={editingCoupon?.discountType || "fixed"} className={input}><option value="fixed">قيمة بالجنيه</option><option value="percent">نسبة مئوية</option></select>
-          <input
+          <label className="admin-form-field"><span>نوع الخصم</span><select aria-label="نوع الخصم" name="discountType" defaultValue={editingCoupon?.discountType || "fixed"} className={input}><option value="fixed">قيمة بالجنيه</option><option value="percent">نسبة مئوية</option></select></label>
+          <label className="admin-form-field"><span>كود الخصم</span><input
             defaultValue={editingCoupon?.code}
             readOnly={Boolean(editingCoupon)}
             aria-label="كود الخصم"
@@ -200,15 +200,15 @@ export function AdminSetupPanel({
             placeholder="WELCOME10"
             required
             className={input}
-          />
-          <input
+          /></label>
+          <label className="admin-form-field"><span>وصف الخصم</span><input
             defaultValue={editingCoupon?.description}
             aria-label="وصف الخصم"
             name="description"
             placeholder="وصف العرض"
             required
             className={input}
-          />
+          /></label>
           <label className="block text-xs">
             قيمة الخصم حسب النوع
             <input

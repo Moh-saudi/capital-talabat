@@ -11,14 +11,22 @@ import { ImageFileField } from "./ImageFileField";
 
 const input = "w-full border border-slate-300 rounded-xl p-3 bg-white text-sm text-slate-900";
 const button = "rounded-xl px-4 py-2 text-sm font-bold border border-slate-200 disabled:opacity-40";
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="block min-w-0 space-y-2 text-xs font-bold text-slate-700"><span>{label}</span>{children}</label>;
+function Field({ label, children, wide = false }: { label: string; children: ReactNode; wide?: boolean }) {
+  return <label className={`admin-form-field${wide ? " admin-form-wide" : ""}`}><span>{label}</span>{children}</label>;
+}
+function FormSection({title, note, children}: {title:string; note?:string; children:ReactNode}) {
+  return <section className="admin-form-section"><div className="admin-form-section-title"><h3>{title}</h3>{note && <p>{note}</p>}</div><div className="admin-form-grid">{children}</div></section>;
 }
 function Editor({ title, busy, onClose, children }: { title: string; busy: boolean; onClose: () => void; children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => { dialog.current?.showModal(); }, []);
+  useEffect(() => {
+    dialog.current?.showModal();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, []);
   return <dialog ref={dialog} onCancel={(event) => { event.preventDefault(); if (!busy) onClose(); }} aria-label={title} className="catalog-editor w-[min(680px,94vw)] max-h-[90dvh] overflow-y-auto rounded-3xl p-5 sm:p-7 backdrop:bg-slate-950/60" dir="rtl">
-    <header className="catalog-editor-heading flex justify-between items-center gap-3"><h2 className="font-black text-xl">{title}</h2><button type="button" aria-label="إغلاق المحرر" disabled={busy} onClick={onClose} className="p-2 rounded-xl border"><X size={18} /></button></header>{children}
+    <header className="catalog-editor-heading flex justify-between items-center gap-3"><div><span className="admin-editor-kicker">إدارة الكتالوج</span><h2 className="font-black text-xl">{title}</h2><p className="admin-editor-description">راجع البيانات والصور ثم احفظ التغييرات.</p></div><button type="button" aria-label="إغلاق المحرر" disabled={busy} onClick={onClose} className="p-2 rounded-xl border"><X size={18} /></button></header>{children}
   </dialog>;
 }
 
@@ -126,28 +134,36 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
     {tab === "products" && view === "table" && resultCount > 0 && <p className="catalog-data-note">المبيعات من الأصناف المسلّمة. التوافر يحدد إمكانية الطلب ولا يمثل كمية المخزون.</p>}
     {resultCount > pageSize && <nav className="admin-pagination catalog-pagination" aria-label="صفحات الكتالوج"><span>صفحة {currentPage + 1} من {lastPage + 1}</span><div><button className="compact-row-action" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}><ChevronRight size={15} />السابق</button><button className="compact-row-action" disabled={currentPage >= lastPage} onClick={() => setPage(currentPage + 1)}>التالي<ChevronLeft size={15} /></button></div></nav>}
     {editor && <Editor key={`${editor.kind}-${editor.id || "new"}`} title={editor.kind === "products" ? editor.id ? "تعديل المنتج" : "إضافة منتج" : editor.id ? "تعديل المتجر" : "إضافة متجر"} busy={busy} onClose={() => { setEditor(null); setError(""); }}>
-      <form onSubmit={submit} className="catalog-editor-form space-y-4"><fieldset disabled={busy} className="space-y-4 min-w-0">
+      <form onSubmit={submit} className="catalog-editor-form"><fieldset disabled={busy} className="catalog-editor-fields">
         {editor.kind === "products" ? <>
+          <FormSection title="بيانات المنتج" note="الاسم والتصنيف والوصف الذي يظهر للعميل.">
           <Field label="المتجر"><select name="storeId" aria-label="متجر المنتج" className={input} required disabled={Boolean(selectedProduct)} defaultValue={selectedProduct?.storeId || storeFilter || ""}><option value="">اختر المتجر</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}</select></Field>
           <Field label="اسم المنتج"><input name="name" aria-label="اسم المنتج" defaultValue={selectedProduct?.name} required maxLength={120} className={input} /></Field>
-          <Field label="وصف المنتج"><textarea name="description" aria-label="وصف المنتج" defaultValue={selectedProduct?.description} required maxLength={1000} rows={3} className={input} /></Field>
-          <div className="grid sm:grid-cols-2 gap-3"><Field label="سعر البيع بالجنيه"><input type="number" name="price" aria-label="سعر المنتج" min="0" max="100000" step="0.01" defaultValue={selectedProduct?.price} required className={input} /></Field><Field label="السعر قبل الخصم — اختياري"><input type="number" name="originalPrice" aria-label="السعر قبل الخصم" min="0" max="100000" step="0.01" defaultValue={selectedProduct && (selectedProduct.originalPrice || 0) > selectedProduct.price ? selectedProduct.originalPrice : ""} className={input} /></Field></div>
+          <Field wide label="وصف المنتج"><textarea name="description" aria-label="وصف المنتج" defaultValue={selectedProduct?.description} required maxLength={1000} rows={2} className={input} /></Field>
           <Field label="التصنيف"><select name="category" aria-label="تصنيف المنتج" defaultValue={selectedProduct?.category} className={input}>{productCategories.map((item) => <option key={item}>{item}</option>)}</select></Field>
           <Field label="شارة قصيرة — اختياري"><input name="badge" defaultValue={selectedProduct?.badge} maxLength={80} className={input} /></Field>
-          <ImageFileField name="imageFile" label="رفع صورة المنتج" disabled={busy} />
+          </FormSection>
+          <FormSection title="التسعير والتوافر">          <Field label="سعر البيع بالجنيه"><input type="number" name="price" aria-label="سعر المنتج" min="0" max="100000" step="0.01" defaultValue={selectedProduct?.price} required className={input} /></Field><Field label="السعر قبل الخصم — اختياري"><input type="number" name="originalPrice" aria-label="السعر قبل الخصم" min="0" max="100000" step="0.01" defaultValue={selectedProduct && (selectedProduct.originalPrice || 0) > selectedProduct.price ? selectedProduct.originalPrice : ""} className={input} /></Field>
+<div className="admin-form-wide admin-form-toggles">          <label className="flex gap-2 text-sm"><input type="checkbox" name="inStock" defaultChecked={selectedProduct ? selectedProduct.inStock : true} disabled={selectedProduct?.archived} />متاح للطلب</label><label className="flex gap-2 text-sm"><input type="checkbox" name="isPopular" defaultChecked={selectedProduct?.isPopular} />عرض ضمن المنتجات المميزة</label>
+</div></FormSection>
+          <FormSection title="صورة المنتج" note="ارفع صورة واضحة؛ رابط الصورة بديل اختياري.">          <ImageFileField name="imageFile" label="رفع صورة المنتج" disabled={busy} />
           <Field label="أو رابط الصورة — اختياري"><input type="url" name="imageUrl" defaultValue={selectedProduct?.imageUrl} pattern="https://.*" className={input} /></Field>
           {selectedProduct?.imageUrl && <img src={selectedProduct.imageUrl} alt="الصورة الحالية للمنتج" className="h-24 rounded-xl" />}
-          <label className="flex gap-2 text-sm"><input type="checkbox" name="inStock" defaultChecked={selectedProduct ? selectedProduct.inStock : true} disabled={selectedProduct?.archived} />متاح للطلب</label><label className="flex gap-2 text-sm"><input type="checkbox" name="isPopular" defaultChecked={selectedProduct?.isPopular} />عرض ضمن المنتجات المميزة</label>
+</FormSection>
         </> : <>
-          <Field label="اسم المتجر"><input name="name" aria-label="اسم المتجر" defaultValue={selectedStore?.name} required maxLength={120} className={input} /></Field><Field label="الاسم بالإنجليزية — اختياري"><input name="nameEn" defaultValue={selectedStore?.nameEn} className={input} /></Field><Field label="عنوان المتجر"><textarea name="address" aria-label="عنوان المتجر" defaultValue={selectedStore?.locationInDistrict} required maxLength={500} className={input} /></Field>
-          <Field label="نوع النشاط"><input name="type" aria-label="نوع النشاط" defaultValue={selectedStore?.type} required className={input} /></Field><Field label="التصنيف"><select name="category" defaultValue={selectedStore?.category} className={input}>{storeCategories.map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></Field><Field label="حالة المتجر"><select name="status" defaultValue={selectedStore?.status || "closed"} className={input}><option value="closed">مغلق</option><option value="open">مفتوح</option><option value="busy">مشغول</option></select></Field>
-          <div className="grid sm:grid-cols-2 gap-3"><Field label="الحد الأدنى للطلب"><input name="minOrder" type="number" min="0" max="100000" step="0.01" defaultValue={selectedStore?.minOrder ?? 0} required className={input} /></Field><Field label="رسوم التوصيل"><input name="deliveryFee" type="number" min="0" max="1000" step="0.01" defaultValue={selectedStore?.deliveryFee ?? 0} required className={input} /></Field></div>
+<FormSection title="بيانات المتجر" note="الاسم والعنوان الأساسيان للمتجر.">
+          <Field label="اسم المتجر"><input name="name" aria-label="اسم المتجر" defaultValue={selectedStore?.name} required maxLength={120} className={input} /></Field><Field label="الاسم بالإنجليزية — اختياري"><input name="nameEn" defaultValue={selectedStore?.nameEn} className={input} /></Field><Field wide label="عنوان المتجر"><textarea name="address" aria-label="عنوان المتجر" defaultValue={selectedStore?.locationInDistrict} required maxLength={500} rows={2} className={input} /></Field>
+</FormSection>
+<FormSection title="التشغيل والتوصيل" note="حدّد التوافر ورسوم الطلب ووقت التجهيز.">          <Field label="نوع النشاط"><input name="type" aria-label="نوع النشاط" defaultValue={selectedStore?.type} required className={input} /></Field><Field label="التصنيف"><select name="category" defaultValue={selectedStore?.category} className={input}>{storeCategories.map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></Field><Field label="حالة المتجر"><select name="status" defaultValue={selectedStore?.status || "closed"} className={input}><option value="closed">مغلق</option><option value="open">مفتوح</option><option value="busy">مشغول</option></select></Field>
+          <Field label="الحد الأدنى للطلب"><input name="minOrder" type="number" min="0" max="100000" step="0.01" defaultValue={selectedStore?.minOrder ?? 0} required className={input} /></Field><Field label="رسوم التوصيل"><input name="deliveryFee" type="number" min="0" max="1000" step="0.01" defaultValue={selectedStore?.deliveryFee ?? 0} required className={input} /></Field>
           <Field label="مدة التجهيز المتوقعة — اختياري"><input name="deliveryTime" defaultValue={selectedStore?.deliveryTime} className={input} /></Field>
-          <ImageFileField name="coverFile" label="رفع صورة المتجر" disabled={busy} /><Field label="أو رابط صورة المتجر"><input name="imageUrl" type="url" pattern="https://.*" defaultValue={selectedStore?.imageUrl || selectedStore?.bannerUrl} className={input} /></Field><ImageFileField name="logoFile" label="رفع شعار المتجر" disabled={busy} /><Field label="أو رابط الشعار"><input name="logoUrl" type="url" pattern="https://.*" defaultValue={selectedStore?.logoUrl} className={input} /></Field>
+</FormSection>
+<FormSection title="الصور والهوية" note="صورة الغلاف والشعار؛ يمكنك استخدام ملف أو رابط مباشر.">          <ImageFileField name="coverFile" label="رفع صورة المتجر" disabled={busy} /><Field label="أو رابط صورة المتجر"><input name="imageUrl" type="url" pattern="https://.*" defaultValue={selectedStore?.imageUrl || selectedStore?.bannerUrl} className={input} /></Field><ImageFileField name="logoFile" label="رفع شعار المتجر" disabled={busy} /><Field label="أو رابط الشعار"><input name="logoUrl" type="url" pattern="https://.*" defaultValue={selectedStore?.logoUrl} className={input} /></Field>
+</FormSection>
         </>}
       </fieldset>
       {error && <p role="alert" className="p-3 bg-red-50 text-red-700 rounded-xl">{error}</p>}
-      <p className="text-xs text-slate-500">إذا اخترت ملفًا، ستُستخدم الصورة المرفوعة بدلًا من الرابط.</p><div className="catalog-editor-actions"><button type="submit" disabled={busy} className={`${button} bg-orange-600 text-white`}>{busy ? "جارٍ الحفظ…" : "حفظ"}</button><button type="button" disabled={busy} onClick={() => { setEditor(null); setError(""); }} className={button}>إلغاء</button></div>
+      <p className="text-xs text-slate-500">إذا اخترت ملفًا، ستُستخدم الصورة المرفوعة بدلًا من الرابط.</p><div className="catalog-editor-actions"><button type="submit" disabled={busy} className={`${button} bg-orange-600 text-white`}>{busy ? "جارٍ الحفظ…" : editor.id ? "حفظ التعديلات" : editor.kind === "stores" ? "إضافة المتجر" : "إضافة المنتج"}</button><button type="button" disabled={busy} onClick={() => { setEditor(null); setError(""); }} className={button}>إلغاء</button></div>
       </form>
     </Editor>}
   </section>;
