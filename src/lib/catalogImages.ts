@@ -9,7 +9,7 @@ async function imageRequest(body: object) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({ error: "خدمة الصور غير متاحة." }));
-  if (!response.ok) throw new Error(result.error || "تعذر رفع الصورة.");
+  if (!response.ok) throw new Error((result.error || "تعذر رفع الصورة.") + (typeof result.incidentId === "string" ? " · معرّف الخطأ: " + result.incidentId.slice(0, 80) : ""));
   return result;
 }
 
@@ -31,6 +31,7 @@ export async function uploadCatalogImage(collection: "stores" | "products", id: 
     return { key: target.key as string, url: target.publicUrl as string };
   } catch (error) {
     await imageRequest({ action: "delete", key: target.key }).catch(() => {});
+    if (error instanceof TypeError) throw new Error("تعذر إرسال الصورة إلى خدمة التخزين. تحقق من الاتصال أو تواصل مع المسؤول لمراجعة إعدادات السماح بالرفع لهذا الموقع.");
     throw error;
   }
 }

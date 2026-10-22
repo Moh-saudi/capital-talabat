@@ -1,3 +1,4 @@
+import { catalogImageFailure } from "../catalogImageFailure.ts";
 import { auditRecord, attachAuditContext } from "../audit.ts";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -11,6 +12,7 @@ export default async function handler(req: any, res: any) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   const token = req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
   if (!token) return res.status(401).json({ error: "يرجى تسجيل الدخول." });
+  let stage = "authorization";
   try {
     const { auth, db } = adminServices();
     let identity;
@@ -32,7 +34,9 @@ export default async function handler(req: any, res: any) {
       try { spec = imageUploadSpec(input); }
       catch { return res.status(400).json({ error: "اختر صورة JPG أو PNG أو WebP حتى 5 ميجابايت." }); }
     }
+    stage = "storage-configuration";
     const { client, bucket, publicUrl } = r2Services();
+    stage = input.action === "delete" ? "storage-delete" : "storage-signing";
     if (input.action === "delete") {
       const log=db.collection("auditLogs").doc();
       await log.set({...auditRecord(identity,"images.delete","images",input.key,{key:input.key},null),status:"pending"});
@@ -44,9 +48,12 @@ export default async function handler(req: any, res: any) {
       Bucket: bucket, Key: spec!.key, ContentType: spec!.contentType,
       ContentLength: spec!.size, CacheControl: "public, max-age=31536000, immutable",
     }), { expiresIn: 120, signableHeaders: new Set(["content-type", "content-length", "cache-control"]) });
+    stage = "audit";
     await db.collection("auditLogs").add(auditRecord(identity,"images.upload.authorized","images",spec!.key,null,{key:spec!.key,size:spec!.size,contentType:spec!.contentType}));
     return res.status(200).json({ key: spec!.key, uploadUrl, publicUrl: `${publicUrl}/${spec!.key}` });
-  } catch {
-    return res.status(503).json({ error: "رفع الصور غير متاح حاليًا. يرجى المحاولة لاحقًا." });
+  } catch (error) {
+    const failure = catalogImageFailure(error, stage);
+    console.error("Catalog image request failed", { incidentId: failure.incidentId, stage, code: failure.code });
+    return res.status(503).json(failure);
   }
 }
