@@ -325,7 +325,7 @@ export const CorporateWebsite: React.FC<CorporateWebsiteProps> = ({
                   position: "center",
                 },
                 {
-                  image: "government-district-gardens.jpg",
+                  image: "menu-placeholder.webp",
                   title: "من الفود كورت لمكتبك",
                   text: "لخدمة موظفي الحي الحكومي",
                   tag: "في قلب العاصمة",

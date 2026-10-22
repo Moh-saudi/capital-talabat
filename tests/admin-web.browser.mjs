@@ -20,34 +20,7 @@ let browser;
 try{
  for(let i=0;i<100;i++){try{await fetch('http://127.0.0.1:3105',{signal:AbortSignal.timeout(1000)});break;}catch{await new Promise(r=>setTimeout(r,100));}}
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto('http://127.0.0.1:3105/');
- await page.getByRole('navigation',{name:'القائمة الرئيسية'}).waitFor();
- assert.equal(await page.getByRole('heading',{name:'تسجيل دخول الإدارة',exact:true}).count(),0);
- assert.equal(await page.getByText('iPhone 16 Pro',{exact:true}).count(),0);
- for(const width of [390,768,1440]){await page.setViewportSize({width,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'public overflow '+width);}
- await page.getByRole('button',{name:'تطبيق الموبايل',exact:true}).click();await page.getByRole('dialog').waitFor();await page.getByRole('button',{name:'إغلاق',exact:true}).click();
- // Every hero slide fits small screens; app prompts remain dismissible without a release URL.
- for(const width of [320,360,390,430,768,1440]){
-  await page.setViewportSize({width,height:844});
-  for(let slide=1;slide<=4;slide++){
-   await page.getByRole('button',{name:new RegExp('^عرض الميزة '+slide+':')}).click();
-   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'public hero overflow '+width+' slide '+slide);
-  }
-  if(width<=430){const brand=await page.locator('.site-brand').boundingBox(),app=await page.getByRole('button',{name:'تطبيق الموبايل',exact:true}).boundingBox();assert.ok(Math.abs(brand.y-app.y)<12,'mobile brand and app share a row');const photo=await page.locator('.showcase-images').boundingBox();assert.ok(photo.y<180&&photo.height>350,'district photograph fills the mobile hero');}
- }
- await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:/^عرض الميزة 1:/}).click();await page.waitForFunction(()=>{const slide=document.querySelector('.showcase-image.is-active'),img=slide?.querySelector('img');return slide&&Number(getComputedStyle(slide).opacity)>.99&&img?.complete&&img.naturalWidth>0;});await page.screenshot({path:join(tmpdir(),'capital-public-mobile.png'),fullPage:false});
- await page.getByRole('button',{name:/فطار يظبط يومك/}).click();const appPrompt=page.getByRole('dialog',{name:'نكمل على التطبيق؟',exact:true});await appPrompt.waitFor();
- await appPrompt.getByText('فطار يظبط يومك',{exact:true}).waitFor();await appPrompt.getByText('رابط التحميل الرسمي سيتاح قريبًا.',{exact:true}).waitFor();
- assert.equal(await page.evaluate(()=>document.body.style.overflow),'hidden');assert.equal(await appPrompt.getByRole('link',{name:'افتح التطبيق',exact:true}).count(),0);
- await page.screenshot({path:join(tmpdir(),'capital-public-app-prompt.png'),fullPage:false});await page.keyboard.press('Escape');await appPrompt.waitFor({state:'hidden'});assert.notEqual(await page.evaluate(()=>document.body.style.overflow),'hidden');
- await page.setViewportSize({width:1440,height:1000});
- const support=page.getByRole('link',{name:'تواصل مع الدعم عبر واتساب',exact:true});assert.equal(await support.getAttribute('href'),'https://wa.me/201017799580');
- await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'تطبيق الموبايل',exact:true}).getByAltText('Google Play',{exact:true}).waitFor();
- assert.equal(await page.locator('.public-how>div').evaluate(el=>el.scrollWidth>el.clientWidth),true,'ordering steps swipe horizontally on mobile');
- await page.getByRole('navigation',{name:'القائمة الرئيسية'}).getByRole('link',{name:'الوظائف',exact:true}).click();await page.getByRole('heading',{name:'مكانك مع فريقنا.',exact:true}).waitFor();
- assert.equal(new URL(page.url()).pathname,'/careers');assert.equal(await page.getByRole('link',{name:'استفسر عن فرص العمل',exact:true}).count(),3);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'careers mobile overflow');
- await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:join(tmpdir(),'capital-careers-mobile.png'),fullPage:true});await page.emulateMedia({reducedMotion:'no-preference'});await page.getByRole('link',{name:'العودة للرئيسية',exact:true}).click();await page.setViewportSize({width:1440,height:1000});
- await page.getByRole('link',{name:'دخول الإدارة',exact:true}).click();
+ await page.goto('http://127.0.0.1:3105/admin');
  assert.equal(new URL(page.url()).pathname,'/admin');
  assert.equal(await page.evaluate(async()=> (await import('/src/lib/firebase.ts')).firebaseConfig.projectId),'demo-capital-talabat');await page.getByRole('heading',{name:'تسجيل دخول الإدارة',exact:true}).waitFor();
  assert.equal(await page.getByText('تصفح كزائر',{exact:true}).count(),0);assert.equal(await page.getByText('iPhone 16 Pro',{exact:true}).count(),0);
@@ -129,16 +102,7 @@ try{
  await page.screenshot({path:join(tmpdir(),'capital-catalog-editor.png'),fullPage:true});await page.keyboard.press('Escape');
  for(const width of [390,768,1440]){await page.setViewportSize({width,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'catalog table overflow '+width);}
  await page.setViewportSize({width:390,height:1000});await page.screenshot({path:join(tmpdir(),'capital-catalog-mobile.png'),fullPage:true});
- // A signed-out visitor sees only real public catalog records and can continue via the app prompt.
- await services.db.doc('stores/'+catalogStore).update({status:'open'});
- for(let i=0;i<5;i++)await services.db.doc('stores/carousel-'+i).set({id:'carousel-'+i,name:'متجر اختبار الشريط '+i,status:'open',type:'اختبار معزول'});
- const visitor=await browser.newPage({viewport:{width:390,height:844}});await visitor.goto('http://127.0.0.1:3105/');
- await visitor.getByRole('button',{name:'المتاجر التالية',exact:true}).waitFor();await visitor.getByRole('button',{name:'إيقاف حركة المتاجر',exact:true}).click();assert.equal(await visitor.getByRole('button',{name:'تشغيل حركة المتاجر',exact:true}).getAttribute('aria-pressed'),'false');await visitor.getByRole('button',{name:'المتاجر التالية',exact:true}).click();await visitor.waitForFunction(()=>Math.abs(document.querySelector('.public-store-list').scrollLeft)>20);await visitor.getByRole('button',{name:'المتاجر السابقة',exact:true}).click();await visitor.waitForFunction(()=>Math.abs(document.querySelector('.public-store-list').scrollLeft)<3);
-
- await visitor.getByRole('button',{name:/اختبار بوابة الإدارة.*مفتوح الآن/}).click();const visitorPrompt=visitor.getByRole('dialog',{name:'نكمل على التطبيق؟',exact:true});await visitorPrompt.getByText('اختبار بوابة الإدارة',{exact:true}).waitFor();await visitorPrompt.getByRole('button',{name:'أكمل تصفح الموقع',exact:true}).click();
- await visitor.getByRole('button',{name:/صنف اختبار 02/}).click();await visitorPrompt.getByText('صنف اختبار 02',{exact:true}).waitFor();await visitorPrompt.getByRole('button',{name:'إغلاق',exact:true}).click();
- assert.equal(await visitor.getByRole('button',{name:/صنف اختبار 01/}).count(),0,'unavailable products do not appear in the public catalog');assert.equal(await visitor.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'real public catalog mobile overflow');await visitor.screenshot({path:join(tmpdir(),'capital-public-catalog.png'),fullPage:true});await services.db.doc('stores/'+catalogStore).update({status:'closed'});await visitor.getByRole('button',{name:/صنف اختبار 02/}).waitFor({state:'hidden'});await visitor.close();
  await services.db.doc('admins/'+accounts.admin.uid).delete();await page.getByRole('heading',{name:'الحساب غير مخوّل للإدارة',exact:true}).waitFor();assert.equal(await page.getByRole('navigation',{name:'أقسام إدارة التشغيل'}).count(),0);
  assert.deepEqual(errors,[]);
- console.log('Public homepage and protected admin passed: public navigation, mobile dialog, /admin login, no simulator/role picker, employee/chef/courier denial, real admin admission, store persistence, session reload, live revocation, server-backed user creation/role/disable, audited export and seven responsive sections at 390/768/1440. Emulator data only.');
+ console.log('Protected admin passed: /admin login, no simulator/role picker, employee/chef/courier denial, real admin admission, store persistence, session reload, live revocation, server-backed user creation/role/disable, audited export and seven responsive sections at 390/768/1440. Emulator data only.');
 }finally{await browser?.close();vite.kill('SIGTERM');}

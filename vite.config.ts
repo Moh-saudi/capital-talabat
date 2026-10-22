@@ -1,3 +1,4 @@
+import { SERVED_MINISTRIES, SITE_URL, WHATSAPP } from './src/config/site.js';
 import { execFileSync } from "node:child_process";
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -12,6 +13,15 @@ export default defineConfig(() => {
   return {
     define: { 'import.meta.env.VITE_BUILD_ID': JSON.stringify(buildId) },
     plugins: [
+      { name: 'service-share-metadata', transformIndexHtml: { order: 'pre', handler(html) {
+        const description = `فطار وغداء وسوبر ماركت باسم طلبات العاصمة. بنخدم حاليًا ${SERVED_MINISTRIES.join('، ')}، والاستلام عند بوابة الوزارة.`;
+        const schema = { '@context':'https://schema.org', '@graph':[
+          { '@type':'Organization', '@id':SITE_URL+'/#organization', name:'طلبات العاصمة', alternateName:'Capital Talabat', url:SITE_URL+'/', logo:SITE_URL+'/icons/icon-512.png', telephone:'+'+WHATSAPP },
+          { '@type':'LocalBusiness', '@id':SITE_URL+'/#service', name:'طلبات العاصمة', url:SITE_URL+'/', image:SITE_URL+'/social/cover.png', telephone:'+'+WHATSAPP, areaServed:SERVED_MINISTRIES.map(name=>({'@type':'Place',name:name+' — الحي الحكومي بالعاصمة الإدارية، مصر'})), description, currenciesAccepted:'EGP', paymentAccepted:'InstaPay, Vodafone Cash', parentOrganization:{'@id':SITE_URL+'/#organization'} }
+        ] };
+        return html.replaceAll('__SERVICE_DESCRIPTION__',description.replaceAll('&','&amp;').replaceAll('"','&quot;')).replace('__SERVICE_SCHEMA__',JSON.stringify(schema).replaceAll('<','\\u003c'));
+      } } },
+      { name: 'preview-noindex' , transformIndexHtml: { order: 'pre', handler(html) { return process.env.VERCEL_ENV === 'preview' ? html.replace('</head>', '<meta name="robots" content="noindex, nofollow"></head>') : html; } } },
       { name: 'capital-build-info', generateBundle() { this.emitFile({type:'asset',fileName:'build-info.json',source:JSON.stringify({id:buildId,builtAt})}); } },
       react(),
       tailwindcss(),
@@ -25,7 +35,7 @@ export default defineConfig(() => {
           name: 'طلبات العاصمة',
           short_name: 'طلبات العاصمة',
           description:
-            'طلبات العاصمة لخدمة موظفي الحي الحكومي.',
+            'فطارك وغداءك لبوابة وزارتك مع طلبات العاصمة.',
           theme_color: '#10213f',
           background_color: '#f8fafc',
           display: 'standalone',
@@ -36,13 +46,13 @@ export default defineConfig(() => {
           scope: '/',
           icons: [
             {
-              src: '/assets/aistudio/Capital_Talabat_App_Icon_7e80c871.png',
+              src: '/icons/icon-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/assets/aistudio/Capital_Talabat_App_Icon_7e80c871.png',
+              src: '/icons/icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
@@ -52,9 +62,9 @@ export default defineConfig(() => {
         workbox: {
           // Only Vite's hashed chunks are immutable; public/assets images are not.
           dontCacheBustURLsMatching: /^assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(?:js|css)$/,
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,woff2}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,webp,woff2}'],
           // Fetch current HTML on navigation instead of pinning visitors to precached releases.
-          globIgnores: ['**/index.html'],
+          globIgnores: ['**/index.html', 'assets/aistudio/1__*.png', 'assets/aistudio/image_*.png', 'assets/aistudio/edc*.jpg', 'images/breakfast.jpg', 'images/coffee.jpg', 'images/cafe.jpg', 'images/office.jpg'],
           navigateFallback: null,
           runtimeCaching: [
             {

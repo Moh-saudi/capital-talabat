@@ -5,3 +5,5 @@ import './mobile-site.css';
 import './public-extras.css';
 
 createRoot(document.getElementById('root')!).render(<App />);
+
+import './service-site.css';

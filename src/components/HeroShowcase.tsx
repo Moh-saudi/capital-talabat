@@ -13,7 +13,7 @@ import {
 
 const SLIDES = [
   {
-    image: "/images/government-district-gardens.jpg",
+    image: "/images/menu-placeholder.webp",
     alt: "الساحات والممرات بين مباني الوزارات في الحي الحكومي بالعاصمة الإدارية",
     eyebrow: "طلبات العاصمة · لخدمة موظفي الحي الحكومي",
     title: "في الحي الحكومي؟",
@@ -28,7 +28,7 @@ const SLIDES = [
     position: "left top",
   },
   {
-    image: "/images/government-district-ministries.jpg",
+    image: "/images/menu-placeholder.webp",
     alt: "مباني الوزارات وشوارع الحي الحكومي في العاصمة الإدارية الجديدة",
     eyebrow: "من الفود كورت إلى مبنى وزارتك",
     title: "بريكك قصير؟",
@@ -43,7 +43,7 @@ const SLIDES = [
     position: "left top",
   },
   {
-    image: "/images/government-district-skyline.jpg",
+    image: "/images/menu-placeholder.webp",
     alt: "لقطة جوية لمباني الوزارات ومسجد مصر في خلفية الحي الحكومي",
     eyebrow: "يومك في العاصمة أسهل",
     title: "يومك مزدحم؟",
@@ -58,7 +58,7 @@ const SLIDES = [
     position: "left top",
   },
   {
-    image: "/images/government-district-night.jpg",
+    image: "/images/menu-placeholder.webp",
     alt: "لقطة ليلية مضاءة لمجمع مباني الحي الحكومي بالعاصمة الإدارية",
     eyebrow: "للمطاعم والكافيهات في العاصمة",
     title: "مطعمك بالعاصمة؟",
@@ -249,14 +249,7 @@ export function HeroShowcase({
             <ArrowLeft size={20} />
           </span>
         </div>
-        <a
-          className="hero-caption"
-          href="https://github.com/sasagaming496/New-Capital-of-Egypt/blob/c0373373d8667d91dc2b2dae7514c858ac015948/%D8%A7%D9%84%D8%AD%D9%8A%20%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D9%8A.mp4"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          لقطات الحي الحكومي · المصدر: فيديو يحمل علامة ACUD ↗
-        </a>
+
       </div>
     </section>
   );

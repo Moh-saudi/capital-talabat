@@ -1,0 +1,28 @@
+name: Public storefront preview checks
+on:
+  push:
+    branches: ['preview/brand-whatsapp-service']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - run: bun install --frozen-lockfile
+      - run: npm run lint
+      - run: npm run test:public-service
+      - run: npm run build
+        env:
+          VERCEL_ENV: preview
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:public-web
+      - run: node tests/pwa-build.browser.mjs
