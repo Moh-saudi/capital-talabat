@@ -1,3 +1,4 @@
+import { isInvalidIdentityError } from "./identityErrors.ts";
 import { randomUUID } from "node:crypto";
 import { attachAuditContext } from "./audit.ts";
 import { adminServices } from './firebaseAdmin.ts';
@@ -7,7 +8,7 @@ export async function requireAdmin(req: any) {
   if (!token) throw new AdminError(401, 'يرجى تسجيل الدخول.');
   const services = adminServices();
   let actor;
-  try { actor = await services.auth.verifyIdToken(token, true); } catch { throw new AdminError(401, 'جلسة الدخول غير صالحة.'); }
+  try { actor = await services.auth.verifyIdToken(token, true); } catch (error) { if(isInvalidIdentityError(error)) throw new AdminError(401, 'جلسة الدخول غير صالحة. سجّل الدخول مجددًا.'); throw error; }
   if ((!actor.email_verified && !actor.phone_number) || !(await services.db.doc('admins/' + actor.uid).get()).exists) throw new AdminError(403, 'هذه العملية للإدارة فقط.');
   const access=(await services.db.doc('accountAccess/'+actor.uid).get()).data();
   if(access&&actor.auth_time<=(access.revokedBefore||0))throw new AdminError(401,'أُلغيت هذه الجلسة. سجل الدخول من جديد.');
@@ -18,6 +19,7 @@ export async function requireAdmin(req: any) {
 export function adminError(res: any, error: any) {
   const code = String(error?.code || '');
   if (code === 'FIREBASE_ADMIN_NOT_CONFIGURED') return res.status(503).json({error:'خدمة الإدارة غير متاحة حاليًا. يرجى التواصل مع مسؤول المنصة.',code});
+  if (code === 'auth/insufficient-permission') return res.status(503).json({error:'حساب خدمة الإدارة لا يملك صلاحية التحقق من الحسابات. يجب على مسؤول المشروع مراجعة صلاحيات المصادقة.',code:'ADMIN_AUTH_ACCESS_DENIED'});
   if (code.includes('invalid-credential')) return res.status(503).json({error:'تعذر الاتصال بخدمة الإدارة. يرجى التواصل مع مسؤول المنصة.',code:'FIREBASE_ADMIN_INVALID_CREDENTIALS'});
   if (error instanceof AdminError) return res.status(error.status).json({error:error.message});
   if (code.includes('email-already-exists')) return res.status(409).json({error:'البريد مستخدم في حساب آخر.'});

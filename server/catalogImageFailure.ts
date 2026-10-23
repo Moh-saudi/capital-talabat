@@ -6,7 +6,10 @@ export function catalogImageFailure(error: unknown, stage: string) {
   const message = (error as {message?: unknown})?.message;
   let code = 'IMAGE_SERVICE_FAILED';
   let text = 'تعذر تجهيز رفع الصورة. تواصل مع مسؤول المنصة واذكر معرّف الخطأ.';
-  if (rawCode === 'FIREBASE_ADMIN_NOT_CONFIGURED') {
+  if (rawCode === 'auth/insufficient-permission') {
+    code = 'IMAGE_AUTH_ACCESS_DENIED';
+    text = 'حساب خدمة الإدارة لا يملك صلاحية التحقق من الحسابات. يجب على مسؤول المشروع مراجعة صلاحيات المصادقة.';
+  } else if (rawCode === 'FIREBASE_ADMIN_NOT_CONFIGURED') {
     code = 'IMAGE_AUTH_SERVICE_NOT_CONFIGURED';
     text = 'إعدادات التحقق من صلاحية الإدارة غير مكتملة على هذه النسخة. يجب على المسؤول تفعيل إعدادات الخادم ثم إعادة النشر.';
   } else if (message === 'R2_NOT_CONFIGURED' || stage === 'storage-configuration') {

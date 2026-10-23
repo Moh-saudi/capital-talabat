@@ -1,3 +1,4 @@
+import { isInvalidIdentityError } from "../identityErrors.ts";
 import { catalogImageFailure } from "../catalogImageFailure.ts";
 import { auditRecord, attachAuditContext } from "../audit.ts";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
@@ -17,7 +18,7 @@ export default async function handler(req: any, res: any) {
     const { auth, db } = adminServices();
     let identity;
     try { identity = await auth.verifyIdToken(token, true); }
-    catch { return res.status(401).json({ error: "جلسة الدخول غير صالحة." }); }
+    catch (error) { if(isInvalidIdentityError(error)) return res.status(401).json({ error: "جلسة الدخول غير صالحة. سجّل الدخول مجددًا." }); throw error; }
     const access=(await db.doc('accountAccess/'+identity.uid).get()).data();
     if(access?.disabled||access?.operationLocked||identity.auth_time<=(access?.revokedBefore||0))return res.status(401).json({error:'أُلغيت هذه الجلسة أو عُلّق الحساب. سجل الدخول من جديد.'});
     attachAuditContext(req,identity);

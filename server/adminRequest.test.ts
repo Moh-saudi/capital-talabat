@@ -9,3 +9,7 @@ test('server database permission failures are distinguished from an unauthorized
 test('unexpected administration failures receive a safe trace identifier',()=>{
  const res=response();adminError(res,new Error('private server detail'));assert.equal(res.body.code,'ADMIN_SERVICE_FAILED');assert.ok(res.body.incidentId);assert.doesNotMatch(JSON.stringify(res.body),/private server detail/);
 });
+
+test('authentication service permission failure is not blamed on the user session',()=>{
+ const res=response();adminError(res,{code:'auth/insufficient-permission'});assert.equal(res.statusCode,503);assert.equal(res.body.code,'ADMIN_AUTH_ACCESS_DENIED');
+});

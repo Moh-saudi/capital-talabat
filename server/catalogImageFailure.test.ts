@@ -13,3 +13,7 @@ test('image failures never expose raw provider messages, keys or signed URLs',()
  assert.equal(result.code,'IMAGE_SERVICE_FAILED');assert.ok(result.incidentId);
  assert.doesNotMatch(JSON.stringify(result),/private-key|signature|SECRET_VALUE|private\.example/);
 });
+
+test('image authorization distinguishes missing authentication permission',()=>{
+ assert.equal(catalogImageFailure({code:'auth/insufficient-permission'},'authorization').code,'IMAGE_AUTH_ACCESS_DENIED');
+});
