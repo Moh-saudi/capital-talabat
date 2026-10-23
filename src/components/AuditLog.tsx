@@ -3,9 +3,10 @@ import { Download, RefreshCw, ShieldCheck, X, ChevronLeft, ChevronRight } from '
 import { adminApi } from '../lib/adminApi';
 type AuditEvent={id:string;createdAt:string;actorUid:string;actorEmail:string;action:string;entityType:string;entityId:string;status:string;reason:string;before:unknown;after:unknown;changedFields:string[];completedAt?:string;errorCode?:string;request?:{requestId?:string;ip?:string;userAgent?:string};source?:string;requestedChange?:unknown};
 const statuses:Record<string,string>={success:'نجحت',pending:'قيد التنفيذ',failed:'فشلت',partial:'تحتاج مراجعة',blocked:'مرفوضة'};
-export function AuditLog(){
+export function AuditLog({searchRequest}:{searchRequest?:{id:string;key:number}}){
  const [events,setEvents]=useState<AuditEvent[]>([]),[filterBy,setFilterBy]=useState('entityType'),[filterValue,setFilterValue]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[filters,setFilters]=useState<any>({}),[page,setPage]=useState(0),[cursors,setCursors]=useState<(string|null)[]>([null]),[next,setNext]=useState<string|null>(null),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false),[error,setError]=useState(''),[selected,setSelected]=useState<AuditEvent|null>(null),[exporting,setExporting]=useState(false),[exportCount,setExportCount]=useState(0);
  const dialog=useRef<HTMLDialogElement>(null),request=useRef(0),cancelExport=useRef(false);
+ useEffect(()=>{if(!searchRequest)return;let active=true;adminApi('data',{action:'audit-record',id:searchRequest.id}).then(result=>{if(active)setSelected(result.event);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[searchRequest?.key]);
  useEffect(()=>{const interval=setInterval(()=>{if(page===0)setRevision(v=>v+1);},30000);return()=>clearInterval(interval);},[page]);
  useEffect(()=>{const id=++request.current;setLoading(true);setError('');adminApi('data',{action:'audit',...filters,cursor:cursors[page]||undefined}).then(result=>{if(id===request.current){setEvents(result.events);setNext(result.nextCursor);}}).catch(e=>{if(id===request.current){setError(e.message);setEvents([]);};}).finally(()=>{if(id===request.current)setLoading(false);});return()=>{request.current++;};},[filters,page,revision]);
  useEffect(()=>{if(selected)dialog.current?.showModal();else dialog.current?.close();},[selected]);

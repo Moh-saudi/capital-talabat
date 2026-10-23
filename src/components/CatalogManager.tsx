@@ -34,7 +34,7 @@ function Editor({ title, busy, onClose, children }: { title: string; busy: boole
   </dialog>;
 }
 
-export function CatalogManager({ products, stores, orders, searchRequest }: { products: Product[]; stores: Store[]; orders: Order[]; searchRequest?:{term:string;kind:"products"|"stores";key:number} }) {
+export function CatalogManager({ products, stores, orders, searchRequest }: { products: Product[]; stores: Store[]; orders: Order[]; searchRequest?:{term:string;kind:"products"|"stores"|"shared";key:number;id?:string} }) {
   const [sharedCatalog,setSharedCatalog]=useState(false);
   const [pricingProduct,setPricingProduct]=useState<Product|null>(null);
   const [importing,setImporting]=useState(false);
@@ -45,7 +45,7 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
   const pageSize = 25;
   const [tab, setTab] = useState<"products" | "stores">("products");
   const [search, setSearch] = useState("");
-  useEffect(()=>{if(searchRequest){setTab(searchRequest.kind);setSearch(searchRequest.term);setStoreFilter("");setCategory("");setAvailability("active");}},[searchRequest?.key]);
+  useEffect(()=>{if(searchRequest){setSharedCatalog(searchRequest.kind==="shared");if(searchRequest.kind!=="shared")setTab(searchRequest.kind);setSearch(searchRequest.term);setStoreFilter("");setCategory("");setAvailability(products.find(item=>item.id===searchRequest.id)?.archived?"archived":"active");}},[searchRequest?.key]);
   const [storeFilter, setStoreFilter] = useState("");
   const [category, setCategory] = useState("");
   const [availability, setAvailability] = useState("active");
@@ -119,7 +119,7 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
     }, editor.id ? "تم حفظ التعديلات." : "تمت الإضافة إلى الكتالوج.");
     if (success) setEditor(null);
   }
-  if(sharedCatalog)return <Suspense fallback={<p role="status">جارٍ فتح الكتالوج المشترك…</p>}><CatalogHub stores={stores} products={products} onBack={()=>setSharedCatalog(false)}/></Suspense>;
+  if(sharedCatalog)return <Suspense fallback={<p role="status">جارٍ فتح الكتالوج المشترك…</p>}><CatalogHub stores={stores} products={products} searchRequest={searchRequest?.kind==="shared"&&searchRequest.id?{id:searchRequest.id,key:searchRequest.key}:undefined} onBack={()=>setSharedCatalog(false)}/></Suspense>;
   return <section dir="rtl" className="catalog-workspace space-y-3" aria-label="إدارة الكتالوج">
     <input ref={imageInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="رفع صورة مباشرة من الصف" onChange={event=>{const file=event.target.files?.[0],id=imageTarget.current;event.target.value="";if(file&&id)void perform(()=>saveCatalogWithImages("products",id,{},[{field:"imageUrl",file}]),"تم تحديث صورة المنتج.");}}/>
     <header className="ops-heading catalog-heading"><div><p className="admin-eyebrow">الكتالوج والتشغيل</p><h1 className="text-2xl font-black">المنتجات والمتاجر</h1><p className="catalog-subtitle">المنيو والأسعار والصور والتوافر في مكان واحد.</p></div><div className="catalog-heading-actions"><button className={`${button} action-catalog`} onClick={()=>setSharedCatalog(true)}>الأصناف وعروض التجار</button>{tab==="products"&&<button className={`${button} action-import`} disabled={busy} onClick={()=>setImporting(true)}><FileSpreadsheet size={17}/>استيراد Excel</button>}<button disabled={busy} onClick={() => open(tab)} className="admin-primary"><Plus size={18} />{tab === "products" ? "إضافة منتج" : "إضافة متجر"}</button></div></header>

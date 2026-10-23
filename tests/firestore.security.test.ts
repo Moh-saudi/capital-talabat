@@ -417,3 +417,9 @@ test("managed catalog offers cannot bypass server price and inventory history",a
  await assertFails(db('restaurant').doc('products/forged').set({...product,id:'forged'}));
  for(const name of ['catalogItems','merchantOffers','catalogPriceHistory','catalogInventoryHistory'])await assertFails(db('restaurant').doc(name+'/forged').set({price:1}));
 });
+test('search projections and reconciliation state are inaccessible to every browser client',async()=>{
+ await env.withSecurityRulesDisabled(async c=>{await c.firestore().doc('adminSearchIndex/private').set({title:'بحث خاص',prefixes:['خاص']});await c.firestore().doc('adminSearchControl/state').set({complete:true});});
+ for(const uid of ['customer','restaurant','courier','admin'])for(const path of ['adminSearchIndex/private','adminSearchControl/state']){
+  await assertFails(db(uid).doc(path).get());await assertFails(db(uid).doc(path).set({title:'forged'}));await assertFails(db(uid).doc(path).delete());
+ }
+});

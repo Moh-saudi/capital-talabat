@@ -1,3 +1,4 @@
+import { writeSearchIndex } from './searchIndex.ts';
 import { randomUUID } from "node:crypto";
 import { FieldValue, type Firestore, type Transaction } from 'firebase-admin/firestore';
 import type { DecodedIdToken } from 'firebase-admin/auth';
@@ -35,5 +36,8 @@ export function auditRecord(actor: Pick<DecodedIdToken,'uid'|'email'>, action: s
     request: auditSafe((actor as any).auditContext || {}), reason: reason.slice(0, 500), createdAt: FieldValue.serverTimestamp(), source: 'admin-api', status: 'success' };
 }
 export function auditInTransaction(db: Firestore, tx: Transaction, actor: Pick<DecodedIdToken,'uid'|'email'>, action: string, type: string, id: string, before: any, after: any, reason = '', source = 'admin-api') {
-  tx.create(db.collection('auditLogs').doc(), {...auditRecord(actor, action, type, id, before, after, reason),source});
+  const log=db.collection('auditLogs').doc(),record={...auditRecord(actor, action, type, id, before, after, reason),source};
+  tx.create(log,record);
+  writeSearchIndex(db,tx,type,id,after);
+  writeSearchIndex(db,tx,'auditLogs',log.id,record);
 }

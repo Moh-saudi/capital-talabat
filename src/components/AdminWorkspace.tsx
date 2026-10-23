@@ -1,3 +1,4 @@
+import {AdminSearchDetails,type SearchTarget} from './AdminSearchDetails';
 import "../admin-theme.css";
 import { createPortal } from "react-dom";
 import { AdminQuickSearch } from "./AdminQuickSearch";
@@ -29,8 +30,13 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
 }) {
   const [tab, setTab] = useState(() => window.location.pathname === "/kitchen" ? "kitchen" : sections.some(section => section.id === window.location.hash.slice(1)) ? window.location.hash.slice(1) : "operations");
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('capital-admin-sidebar')==='collapsed');
-  const [orderRequest,setOrderRequest]=useState<{term:string;key:number}|undefined>();
-  const [catalogRequest,setCatalogRequest]=useState<{term:string;kind:'products'|'stores';key:number}|undefined>();
+  const [searchHost,setSearchHost]=useState<HTMLElement|null>(null);
+  useEffect(()=>{setSearchHost(document.getElementById('admin-header-search'));},[]);
+  const [searchTarget,setSearchTarget]=useState<SearchTarget|null>(null);
+  const [userRequest,setUserRequest]=useState<{uid:string;key:number}>();
+  const [auditRequest,setAuditRequest]=useState<{id:string;key:number}>();
+  const [orderRequest,setOrderRequest]=useState<{term:string;key:number;kind?:'orders'|'partners'|'jobs'}|undefined>();
+  const [catalogRequest,setCatalogRequest]=useState<{term:string;kind:'products'|'stores'|'shared';key:number;id?:string}|undefined>();
   function toggleSidebar(){setCollapsed(value=>{const next=!value;localStorage.setItem('capital-admin-sidebar',next?'collapsed':'expanded');return next;});}
   const [menuOpen, setMenuOpen] = useState(false);
   function navigate(id: string) { setTab(id); setMenuOpen(false); window.history.replaceState(null, "", `#${id}`); window.scrollTo({ top: 0 }); }
@@ -46,11 +52,19 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
   const pending = orders.filter(order => order.orderStatus === "received").length;
   useEffect(() => { if (initialManagementTab && initialManagementTab !== "orders") setTab("management"); }, [initialManagementTab]);
   return <div data-section={tab} className={`admin-layout compact-workspace ${collapsed ? "sidebar-collapsed" : ""}`} dir="rtl">
-    {document.getElementById('admin-header-search')&&createPortal(<AdminQuickSearch orders={orders} products={products} stores={stores} sections={sections} onSelect={(kind,id,label)=>{
-      if(kind==='section')navigate(id);
-      else if(kind==='order'){setOrderRequest({term:label,key:Date.now()});navigate('management');}
-      else{setCatalogRequest({term:label,kind:kind==='store'?'stores':'products',key:Date.now()});navigate('catalog');}
-    }}/>,document.getElementById('admin-header-search')!)}
+    {searchHost&&createPortal(<AdminQuickSearch orders={orders} products={products} stores={stores} sections={sections} onSelect={(kind,id,label,meta)=>{
+      if(kind==='section')navigate(id);else setSearchTarget({source:kind,id,label,...meta});
+    }}/>,searchHost)}
+    {searchTarget&&<AdminSearchDetails key={searchTarget.source+searchTarget.id} target={searchTarget} onClose={()=>setSearchTarget(null)} onNavigate={target=>{
+     const key=Date.now();setSearchTarget(null);
+     if(target.source==='users'||target.source==='staff'){setUserRequest({uid:target.id,key});navigate('users');}
+     else if(target.source==='orders'){setOrderRequest({term:target.label.replace(/^#/,''),key});navigate('management');}
+     else if(target.source==='catalogItems'||target.source==='merchantOffers'){setCatalogRequest({term:'',kind:'shared',id:target.catalogItemId||target.id,key});navigate('catalog');}
+     else if(target.source==='products'||target.source==='stores'){setCatalogRequest({term:target.label,kind:target.source,id:target.id,key});navigate('catalog');}
+     else if(target.source==='auditLogs'){setAuditRequest({id:target.id,key});navigate('audit');}
+     else if(target.source==='coupons')navigate('settings');
+     else{setOrderRequest({term:'',key,kind:target.source==='jobApplications'?'jobs':'partners'});navigate('management');}
+    }}/>}
     <div className="admin-mobile-bar"><button aria-expanded={menuOpen} aria-controls="admin-navigation" onClick={() => setMenuOpen(!menuOpen)}><Menu size={20} />أقسام الإدارة</button><span>{current.label}</span></div>
     {menuOpen && <button className="admin-menu-backdrop" aria-label="إغلاق قائمة الإدارة" onClick={() => setMenuOpen(false)} />}
     <aside className={`admin-sidebar ${menuOpen ? "is-open" : ""}`} id="admin-navigation" aria-label="قائمة الإدارة">
@@ -66,9 +80,9 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
     {tab === "kitchen" && <KitchenDisplay orders={orders} stores={stores} connected={connected} onChange={updateKitchenStage} />}
     {tab === "catalog" && <CatalogManager stores={stores} products={products} orders={orders} searchRequest={catalogRequest} />}
     {tab === "settings" && <AdminSetupPanel stores={stores} staff={staff} coupons={coupons} orders={orders} onError={onError} defaultOpen />}
-    {tab === "management" && (isValidElement(children) ? cloneElement(children as ReactElement<{orderSearchRequest?:{term:string;key:number}}>,{orderSearchRequest:orderRequest}) : children)}
-    {tab === "users" && <UserManagement stores={stores} />}
-    {tab === "audit" && <AuditLog />}
+    {tab === "management" && (isValidElement(children) ? cloneElement(children as ReactElement<{orderSearchRequest?:{term:string;key:number;kind?:'orders'|'partners'|'jobs'}}>,{orderSearchRequest:orderRequest}) : children)}
+    {tab === "users" && <UserManagement stores={stores} searchRequest={userRequest} />}
+    {tab === "audit" && <AuditLog searchRequest={auditRequest} />}
       <footer className="admin-footer">© 2026 جميع الحقوق محفوظة لشركة ميسك للتكنولوجيا. <span className="admin-build-label" dir="ltr">{String(import.meta.env.VITE_BUILD_ID || "local").slice(0,8)}</span></footer>
     </main>
   </div>;

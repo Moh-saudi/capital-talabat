@@ -70,3 +70,31 @@
 .admin-app .catalog-row-more{min-width:0}.admin-app .catalog-row-more summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:5px;min-height:28px}.admin-app .catalog-row-more summary::-webkit-details-marker{display:none}.admin-app .catalog-row-more summary:after{content:'⌄';font-size:12px}.admin-app .catalog-row-more[open]{flex-basis:100%;border-top:1px solid #edf0f4;padding-top:4px}.admin-app .catalog-row-more[open]>summary{width:max-content}.admin-app .catalog-row-more>div{display:flex;flex-wrap:wrap;gap:5px;padding-top:5px}.admin-app .catalog-row-actions{max-width:300px}
 @media(max-width:800px){.admin-app .catalog-row-more summary{min-height:36px}}
 .admin-app .catalog-row-actions{align-items:center}.admin-app .catalog-row-actions>.compact-row-action{align-self:center}.admin-app .catalog-row-more:not([open])>div{display:none}
+/* Search stays compact in the header; richer results appear only while open. */
+.admin-app .admin-global-search-panel{width:min(620px,calc(100vw - 24px));max-height:min(620px,75dvh);left:0;right:auto;display:flex;flex-direction:column;overflow:hidden}
+.admin-app .admin-search-panel-heading{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #edf0f4;flex-shrink:0}
+.admin-app .admin-search-panel-heading .search-close{width:26px;min-height:26px;padding:4px;border:0;justify-content:center}
+.admin-app .admin-search-groups{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;border-bottom:1px solid #edf0f4;flex-shrink:0}
+.admin-app .admin-search-groups button{width:auto;border:1px solid transparent;border-radius:5px;font-size:10px;padding:4px 7px;min-height:27px;color:#5b708c}
+.admin-app .admin-search-groups button[aria-pressed=true]{background:#fff2e8;border-color:#f0d3bd;color:#9c4717}
+.admin-app .admin-search-list{overflow:auto;min-height:0;overscroll-behavior:contain}
+.admin-app .admin-search-list button{padding:8px 12px;font-size:11px}
+.admin-app .admin-search-list button>span{min-width:0}.admin-app .admin-search-list strong,.admin-app .admin-search-list small{overflow-wrap:anywhere}
+.admin-app .admin-search-list .search-kind{display:inline-block;font-size:9px;color:#456c99;background:#f0f4fa;border-radius:4px;padding:1px 5px;margin:0 0 3px}
+.admin-app .admin-search-list small{color:#637992;font-size:10px}
+.admin-app .admin-global-search-panel>p{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;padding:12px;flex-shrink:0}
+.admin-app .admin-global-search-panel>p[role=alert]{color:#9c3845;background:#fff4f5}
+.admin-app .admin-search-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;background:#f8fafc;border-top:1px solid #e5ebf3;font-size:9px;color:#627790;flex-shrink:0}
+.admin-app .admin-search-footer>span{display:flex;align-items:center;gap:5px;overflow-wrap:anywhere}
+.admin-app .admin-search-footer button{width:auto;white-space:nowrap;padding:4px 6px;border:1px solid #d8e2ef;border-radius:5px;font-size:10px;gap:5px;flex-shrink:0}
+.admin-app .admin-global-search-panel .search-load-more{justify-content:center;font-size:11px;color:#39638e;flex-shrink:0}
+.admin-app .admin-search-details{position:fixed;margin:auto!important;inset:0;width:min(600px,calc(100vw - 24px));height:auto;max-width:100%;max-height:85dvh;padding:0;border-radius:10px;overflow:auto;box-shadow:0 20px 70px #10213f30}
+.admin-app .admin-search-details[open]{display:flex;flex-direction:column}
+.admin-app .admin-search-details-body{padding:14px 20px;overflow:auto;min-height:0}
+.admin-app .admin-search-details-body dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.admin-app .admin-search-details-body dt{font-size:10px;color:#687c95}.admin-app .admin-search-details-body dd{font-size:12px;color:#2d4665;overflow-wrap:anywhere;margin-top:3px;white-space:pre-wrap}
+.admin-app .admin-search-details-body>p{font-size:12px;display:flex;gap:6px;align-items:center}
+.admin-app .admin-search-details .catalog-editor-actions{margin-top:0;position:static;flex-shrink:0}
+@media(max-width:800px){.admin-app .admin-global-search-panel{left:auto;right:0;width:min(620px,calc(100vw - 24px));max-height:65dvh}.admin-app .admin-search-groups button{min-height:34px}.admin-app .admin-search-list button{min-height:48px}.admin-app .admin-search-details-body dl{grid-template-columns:minmax(0,1fr)}.admin-app .admin-search-details{width:calc(100vw - 20px);max-height:90dvh}.admin-app .admin-search-footer{flex-wrap:wrap}}
+@media(max-width:800px){.admin-app .admin-sidebar:not(.is-open){display:none}.admin-app .admin-sidebar.is-open{display:flex;transform:none}}
+@media(max-width:800px){.admin-app .admin-global-search-panel{width:min(620px,calc(100vw - 40px))}}

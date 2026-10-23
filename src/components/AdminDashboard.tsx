@@ -43,7 +43,7 @@ interface AdminDashboardProps {
   partnerApplications: PartnerApplication[];
   jobApplications: JobApplication[];
   initialAdminTab?: AdminTabType;
-  orderSearchRequest?: {term:string;key:number};
+  orderSearchRequest?: {term:string;key:number;kind?:"orders"|"partners"|"jobs"};
   onUpdateOrderStatus: (orderId: string, newStatus: OrderStatus) => Promise<void>;
   onAssignCourier: (
     orderId: string,
@@ -78,7 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [selectedOrderId,setSelectedOrderId]=useState('');
   const orderDialog=useRef<HTMLDialogElement>(null);
   useEffect(()=>{if(selectedOrderId)orderDialog.current?.showModal();else orderDialog.current?.close();},[selectedOrderId]);
-  useEffect(()=>{if(orderSearchRequest){setOrderSearch(orderSearchRequest.term);setStatusFilter('all');setMinistryFilter('');setActiveTab('orders');}},[orderSearchRequest?.key]);
+  useEffect(()=>{if(orderSearchRequest){setOrderSearch(orderSearchRequest.term);setStatusFilter('all');setMinistryFilter('');setActiveTab(orderSearchRequest.kind||'orders');}},[orderSearchRequest?.key]);
  useEffect(()=>{if(!selectedOrderId)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous;};},[Boolean(selectedOrderId)]);
   const [orderSearch, setOrderSearch] = useState("");
   const [ministryFilter, setMinistryFilter] = useState("");

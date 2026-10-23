@@ -1,3 +1,4 @@
+import { writeSearchIndex } from '../searchIndex.ts';
 import { randomBytes } from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { requireAdmin, AdminError, adminError, validId } from '../adminRequest.ts';
@@ -98,6 +99,9 @@ export default async function handler(req:any,res:any) {
           tx.set(db.doc('users/'+uid),{fullName:'حساب محذوف',email:'',phone:'',ministry:'',floorNumber:'',roomNumber:'',avatarUrl:'',coordinates:FieldValue.delete(),role:'employee',deletedAt:FieldValue.serverTimestamp(),updatedAt:FieldValue.serverTimestamp()},{merge:true});after={deleted:true,uid,access:after.access};
         }
         if(input.action==='update'&&before.staff){const change={name:fullName,phone:profilePatch.phone,updatedAt:FieldValue.serverTimestamp()};tx.update(db.doc('staff/'+uid),change);after.staff={...before.staff,...change};}
+        writeSearchIndex(db,tx,'users',uid,after.deleted?null:after.profile);
+        writeSearchIndex(db,tx,'auditLogs',log.id,{action:'user.'+input.action,actorEmail:actor.email||'',actorUid:actor.uid,entityType:'users',entityId:uid,status:'success'});
+        writeSearchIndex(db,tx,'staff',uid,after.deleted?null:after.staff);
         tx.update(log,{status:'success',after:auditSafe(after),changedFields:auditChangedFields(before,after),completedAt:FieldValue.serverTimestamp()});tx.delete(lock);if(['create','role','disable','delete'].includes(input.action))tx.delete(db.doc('adminControl/membership'));
       });
       return res.status(200).json({ok:true,uid,...(resetLink?{resetLink}:{})});

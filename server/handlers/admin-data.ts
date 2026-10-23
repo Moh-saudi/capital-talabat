@@ -34,6 +34,7 @@ export default async function handler(req:any,res:any){
   let context: Awaited<ReturnType<typeof requireAdmin>>|undefined;
   try{
     const {db,auth,actor}=context=await requireAdmin(req);const input=req.body||{};
+    if(['search','search-sync','search-record'].includes(input.action)){const {adminSearch}=await import('../adminSearch.ts');return res.status(200).json(await adminSearch(db,input));}
     if(['catalog-items','catalog-offers','catalog-history','catalog-master-save','catalog-adopt','catalog-assign','catalog-offer-save'].includes(input.action)){
       const {catalogHub}=await import('../catalogHub.ts');return res.status(200).json(await catalogHub(db,actor,input));
     }
@@ -54,6 +55,7 @@ export default async function handler(req:any,res:any){
       await db.collection('auditLogs').add({...auditRecord(actor,'audit.export','auditLogs','export',null,{clientReportedCount:input.count,filters:auditSafe(input.filters)}),status:'success'});
       return res.status(200).json({ok:true});
     }
+    if(input.action==='audit-record'){validId(input.id);const doc=await db.doc('auditLogs/'+input.id).get();if(!doc.exists)throw new AdminError(404,'السجل غير موجود.');return res.status(200).json({event:{id:doc.id,...auditSafe(doc.data())}});}
     if(input.action==='audit'){
       let q:any=db.collection('auditLogs');
       if(input.filterValue){if(!['actorUid','actorEmail','action','entityType','status','entityId'].includes(input.filterBy)||!str(input.filterValue,256))bad();q=q.where(input.filterBy,'==',input.filterValue);}

@@ -7,9 +7,10 @@ import { auth } from '../lib/firebase';
 const roleNames:Record<string,string>={employee:'موظف',restaurant:'شيف / مطعم',courier:'مندوب',admin:'مدير النظام'};
 type Account={uid:string;fullName:string;email:string;phone:string;role:string;storeId:string;disabled:boolean;emailVerified:boolean;ministry:string;floorNumber:string;roomNumber:string;providers:string[];lastSignInAt:string;createdAt:string;walletBalance:number};
 const labels:Record<string,string>={view:'ملف المستخدم',create:'إضافة مستخدم',update:'تعديل بيانات المستخدم',role:'تغيير الصلاحيات',disable:'تعطيل الحساب',enable:'تفعيل الحساب',revoke:'إلغاء الجلسات',reset:'استعادة الوصول',delete:'حذف الحساب'};
-export function UserManagement({stores}:{stores:Store[]}){
+export function UserManagement({stores,searchRequest}:{stores:Store[];searchRequest?:{uid:string;key:number}}){
  const [users,setUsers]=useState<Account[]>([]),[query,setQuery]=useState(''),[search,setSearch]=useState(''),[cursors,setCursors]=useState<(string|null)[]>([null]),[page,setPage]=useState(0),[next,setNext]=useState<string|null>(null),[revision,setRevision]=useState(0),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [editor,setEditor]=useState<{action:string;user?:Account}|null>(null),[role,setRole]=useState('employee'),[resetLink,setResetLink]=useState('');const dialog=useRef<HTMLDialogElement>(null);const request=useRef(0);
+ useEffect(()=>{if(searchRequest){setQuery(searchRequest.uid);setSearch(searchRequest.uid);setPage(0);setCursors([null]);}},[searchRequest?.key]);
  useEffect(()=>{const id=++request.current;setLoading(true);setError('');adminApi('users',{action:'list',pageToken:cursors[page]||undefined,search}).then(result=>{if(id===request.current){setUsers(result.users);setNext(result.nextPageToken);}}).catch(e=>{if(id===request.current){setUsers([]);setError(e.message);}}).finally(()=>{if(id===request.current)setLoading(false);});return()=>{request.current++;};},[page,search,revision]);
  useEffect(()=>{if(editor)dialog.current?.showModal();else dialog.current?.close();},[editor]);
  function open(action:string,user?:Account){setError('');setResetLink('');setEditor({action,user});setRole(user?.role||'employee');}

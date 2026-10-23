@@ -83,6 +83,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "adminSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "prefixes",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "source",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -109,6 +123,26 @@
     {
       "collectionGroup": "auditLogs",
       "fieldPath": "changedFields",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "adminSearchIndex",
+      "fieldPath": "text",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "adminSearchIndex",
+      "fieldPath": "title",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "adminSearchIndex",
+      "fieldPath": "detail",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "adminSearchIndex",
+      "fieldPath": "indexedAt",
       "indexes": []
     }
   ]
