@@ -72,3 +72,5 @@ export async function saveCatalogWithImages(
     throw error;
   }
 }
+
+export async function deleteCatalogImage(key:string){await imageRequest({action:'delete',key});}

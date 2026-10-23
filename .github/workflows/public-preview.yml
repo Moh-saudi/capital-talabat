@@ -21,6 +21,7 @@ jobs:
       - run: npm run lint
       - run: npm run test:public-service
       - run: npm run test:catalog-import
+      - run: npm run test:catalog-hub
       - run: npm run build
         env:
           VERCEL_ENV: preview

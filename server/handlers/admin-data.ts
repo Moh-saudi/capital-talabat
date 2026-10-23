@@ -34,6 +34,9 @@ export default async function handler(req:any,res:any){
   let context: Awaited<ReturnType<typeof requireAdmin>>|undefined;
   try{
     const {db,auth,actor}=context=await requireAdmin(req);const input=req.body||{};
+    if(['catalog-items','catalog-offers','catalog-history','catalog-master-save','catalog-adopt','catalog-assign','catalog-offer-save'].includes(input.action)){
+      const {catalogHub}=await import('../catalogHub.ts');return res.status(200).json(await catalogHub(db,actor,input));
+    }
     if(input.action==='catalog-pricing'){
       validId(input.id);const snapshot=await db.doc('catalogPricing/'+input.id).get();
       return res.status(200).json({pricing:snapshot.exists?snapshot.data():null});
@@ -72,6 +75,7 @@ export default async function handler(req:any,res:any){
       const ref=db.doc(type+'/'+id);const [own,target]=await Promise.all([tx.get(db.doc('admins/'+actor.uid)),tx.get(ref)]);
       if(!own.exists)throw new AdminError(403,'انتهت صلاحية الإدارة.');
       const before=target.data()||null;
+      if(type==='products'&&before?.merchantOfferId)throw new AdminError(409,'هذا عرض تاجر مُدار. عدّل مواصفاته وصوره وأسعاره من شاشة الأصناف المشتركة وعروض التجار.');
       let after:any={...(before||{}),...patch};
       if(input.action==='delete'&&!before)throw new AdminError(404,'السجل غير موجود.');
       if(input.action==='approve'){

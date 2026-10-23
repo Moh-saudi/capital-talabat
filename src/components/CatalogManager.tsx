@@ -1,6 +1,5 @@
 import {CatalogPricing} from "./CatalogPricing";
 import {lazy, Suspense} from "react";
-const CatalogImport = lazy(()=>import("./CatalogImport").then(module=>({default:module.CatalogImport})));
 import { CatalogProductTable, CatalogStoreTable } from "./CatalogTables";
 import { customerMessage } from "../utils/customerMessage";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -12,6 +11,8 @@ import { catalogPerformance, productCategories, productFormData, storeCategories
 import { formatEGP } from "../utils/orderCalculations";
 import { ImageFileField } from "./ImageFileField";
 
+const CatalogHub=lazy(()=>import("./CatalogHub").then(module=>({default:module.CatalogHub})));
+const CatalogImport=lazy(()=>import("./CatalogImport").then(module=>({default:module.CatalogImport})));
 const input = "w-full border border-slate-300 rounded-xl p-3 bg-white text-sm text-slate-900";
 const button = "rounded-xl px-4 py-2 text-sm font-bold border border-slate-200 disabled:opacity-40";
 function Field({ label, children, wide = false }: { label: string; children: ReactNode; wide?: boolean }) {
@@ -34,10 +35,11 @@ function Editor({ title, busy, onClose, children }: { title: string; busy: boole
 }
 
 export function CatalogManager({ products, stores, orders, searchRequest }: { products: Product[]; stores: Store[]; orders: Order[]; searchRequest?:{term:string;kind:"products"|"stores";key:number} }) {
+  const [sharedCatalog,setSharedCatalog]=useState(false);
   const [pricingProduct,setPricingProduct]=useState<Product|null>(null);
   const [importing,setImporting]=useState(false);
   const imageInput=useRef<HTMLInputElement>(null),imageTarget=useRef("");
-  function quickImage(product:Product){imageTarget.current=product.id;imageInput.current?.click();}
+  function quickImage(product:Product){if(product.merchantOfferId){setSharedCatalog(true);return;}imageTarget.current=product.id;imageInput.current?.click();}
   const [view, setView] = useState<"table" | "cards">("table");
   const [page, setPage] = useState(0);
   const pageSize = 25;
@@ -77,7 +79,7 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
     catch (e) { setError(customerMessage(e, "تعذر الحفظ. أعد المحاولة.")); return false; }
     finally { setBusy(false); }
   }
-  function open(kind: "products" | "stores", id?: string) { setError(""); setMessage(""); setEditor({ kind, id }); }
+  function open(kind: "products" | "stores", id?: string) { if(kind==="products"&&products.find(p=>p.id===id)?.merchantOfferId){setSharedCatalog(true);return;} setError(""); setMessage(""); setEditor({ kind, id }); }
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!editor || busy) return;
     const data = new FormData(event.currentTarget);
@@ -117,9 +119,10 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
     }, editor.id ? "تم حفظ التعديلات." : "تمت الإضافة إلى الكتالوج.");
     if (success) setEditor(null);
   }
+  if(sharedCatalog)return <Suspense fallback={<p role="status">جارٍ فتح الكتالوج المشترك…</p>}><CatalogHub stores={stores} products={products} onBack={()=>setSharedCatalog(false)}/></Suspense>;
   return <section dir="rtl" className="catalog-workspace space-y-3" aria-label="إدارة الكتالوج">
     <input ref={imageInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="رفع صورة مباشرة من الصف" onChange={event=>{const file=event.target.files?.[0],id=imageTarget.current;event.target.value="";if(file&&id)void perform(()=>saveCatalogWithImages("products",id,{},[{field:"imageUrl",file}]),"تم تحديث صورة المنتج.");}}/>
-    <header className="ops-heading catalog-heading"><div><p className="admin-eyebrow">الكتالوج والتشغيل</p><h1 className="text-2xl font-black">المنتجات والمتاجر</h1><p className="catalog-subtitle">المنيو والأسعار والصور والتوافر في مكان واحد.</p></div><div className="catalog-heading-actions">{tab==="products"&&<button className={button} disabled={busy} onClick={()=>setImporting(true)}><FileSpreadsheet size={17}/>استيراد Excel</button>}<button disabled={busy} onClick={() => open(tab)} className="admin-primary"><Plus size={18} />{tab === "products" ? "إضافة منتج" : "إضافة متجر"}</button></div></header>
+    <header className="ops-heading catalog-heading"><div><p className="admin-eyebrow">الكتالوج والتشغيل</p><h1 className="text-2xl font-black">المنتجات والمتاجر</h1><p className="catalog-subtitle">المنيو والأسعار والصور والتوافر في مكان واحد.</p></div><div className="catalog-heading-actions"><button className={button} onClick={()=>setSharedCatalog(true)}>الأصناف وعروض التجار</button>{tab==="products"&&<button className={button} disabled={busy} onClick={()=>setImporting(true)}><FileSpreadsheet size={17}/>استيراد Excel</button>}<button disabled={busy} onClick={() => open(tab)} className="admin-primary"><Plus size={18} />{tab === "products" ? "إضافة منتج" : "إضافة متجر"}</button></div></header>
     <div className="catalog-metrics">{[["متاجر مسجلة", stores.length], ["منتجات نشطة", active.length], ["متاحة بالمنيو", active.filter((item) => item.inStock).length], ["غير متاحة", active.filter((item) => !item.inStock).length]].map(([label,value]) => <div key={label} className="bg-white border border-slate-200 rounded-2xl p-4"><strong className="block text-2xl text-slate-900">{value}</strong><span className="text-xs text-slate-500">{label}</span></div>)}</div>
     <div className="catalog-tabs"><button aria-pressed={tab === "products"} className={`${button} ${tab === "products" ? "bg-orange-50 border-orange-400" : "bg-white"}`} onClick={() => { setTab("products"); setSearch(""); }}><Package className="inline ml-2" size={16} />المنتجات</button><button aria-pressed={tab === "stores"} className={`${button} ${tab === "stores" ? "bg-orange-50 border-orange-400" : "bg-white"}`} onClick={() => { setTab("stores"); setSearch(""); }}><StoreIcon className="inline ml-2" size={16} />المتاجر</button></div>
     {busy&&!editor&&<p role="status" className="catalog-data-note">جارٍ حفظ التغييرات ورفع الصور إن وجدت…</p>}
@@ -130,7 +133,7 @@ export function CatalogManager({ products, stores, orders, searchRequest }: { pr
     <div className="catalog-results-toolbar"><p role="status">{resultCount} {tab === "products" ? "منتج" : "متجر"}{resultCount > pageSize && ` · عرض ${currentPage * pageSize + 1}–${Math.min((currentPage + 1) * pageSize, resultCount)}`}</p><div>{hasFilters && <button onClick={clearFilters} className="compact-row-action">مسح التصفية</button>}<div className="catalog-view-switch" role="group" aria-label="طريقة عرض الكتالوج"><button aria-label="عرض كجدول" aria-pressed={view === "table"} onClick={() => setView("table")}><List size={16} />جدول</button><button aria-label="عرض كبطاقات" aria-pressed={view === "cards"} onClick={() => setView("cards")}><LayoutGrid size={16} />بطاقات</button></div></div></div>
     {tab === "products" && !stores.length && <div className="catalog-first-store"><StoreIcon size={21} /><div><strong>يمكنك تجهيز الكتالوج بدون متجر</strong><p>أضف المنتجات أو استورد Excel الآن، واربطها بمتجر لاحقًا عند تجهيزها للبيع.</p></div><button className="admin-primary" onClick={() => open("stores")}>إضافة أول متجر</button></div>}
     {view === "table" && resultCount > 0 && <p className="catalog-scroll-hint">اسحب الجدول أفقيًا لعرض بقية الأعمدة.</p>}
-    {view === "table" && resultCount > 0 ? (tab === "products" ? <CatalogProductTable onPricing={setPricingProduct} onImage={quickImage} products={visibleProducts} stores={stores} performance={performance} busy={busy} onEdit={id => open("products", id)} onAvailability={product => perform(() => saveRecord("products", product.id, {inStock: !product.inStock}), "تم تحديث توافر الصنف.")} onArchive={product => perform(() => saveRecord("products", product.id, {archived: !product.archived, inStock: false}), product.archived ? "استُعيد الصنف بحالة غير متاح؛ فعّله عند الجاهزية." : "أُرشف الصنف مع الاحتفاظ بسجل الطلبات.")} /> : <CatalogStoreTable stores={pagedStores} products={products} busy={busy} onEdit={id => open("stores", id)} onStatus={store => perform(() => saveRecord("stores", store.id, {status: store.status === "open" ? "closed" : "open"}), "تم تحديث حالة المتجر.")} />) : <>
+    {view === "table" && resultCount > 0 ? (tab === "products" ? <CatalogProductTable onPricing={setPricingProduct} onImage={quickImage} products={visibleProducts} stores={stores} performance={performance} busy={busy} onEdit={id => open("products", id)} onAvailability={product => product.merchantOfferId?open("products",product.id):perform(() => saveRecord("products", product.id, {inStock: !product.inStock}), "تم تحديث توافر الصنف.")} onArchive={product => product.merchantOfferId?open("products",product.id):perform(() => saveRecord("products", product.id, {archived: !product.archived, inStock: false}), product.archived ? "استُعيد الصنف بحالة غير متاح؛ فعّله عند الجاهزية." : "أُرشف الصنف مع الاحتفاظ بسجل الطلبات.")} /> : <CatalogStoreTable stores={pagedStores} products={products} busy={busy} onEdit={id => open("stores", id)} onStatus={store => perform(() => saveRecord("stores", store.id, {status: store.status === "open" ? "closed" : "open"}), "تم تحديث حالة المتجر.")} />) : <>
     {tab === "products" ? <><p className="text-xs text-slate-500">{filtered.length} منتج · المبيعات من الأصناف المسلّمة في السجلات المتاحة، قبل خصم القسائم ورسوم التوصيل. التوافر يدوي؛ لا يمثل عدد القطع في المخزن.</p><div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{visibleProducts.map((product) => {
       const stats = performance.get(product.id);
       return <article key={product.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden"><div className="flex gap-3 p-4"><div className="relative w-20 h-20 shrink-0 bg-slate-100 rounded-xl overflow-hidden"><ImageIcon className="absolute m-6 text-slate-300" />{product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="relative w-full h-full object-cover" onLoad={(e) => { e.currentTarget.style.visibility = "visible"; }} onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} /> : null}</div><div className="min-w-0"><h2 className="font-bold break-words">{product.name}</h2><p className="text-xs text-slate-500 mt-1">{stores.find((store) => store.id === product.storeId)?.name || product.storeName} · {product.category}</p><strong className="block text-orange-700 mt-2">{formatEGP(product.price)}</strong></div></div>

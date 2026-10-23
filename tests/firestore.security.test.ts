@@ -409,3 +409,11 @@ test("disabled accounts are denied even with a cached ID token",async()=>{
   await env.withSecurityRulesDisabled(c=>c.firestore().doc('accountAccess/customer').set({disabled:true,revokedBefore:0}));
   await assertFails(db('customer').doc('users/customer').get());
 });
+test("managed catalog offers cannot bypass server price and inventory history",async()=>{
+ const product={id:'managed',storeId:'s1',storeName:'مطعم',name:'صنف',description:'وصف',price:20,category:'مشروبات',imageType:'coffee',inStock:true,merchantOfferId:'managed',catalogItemId:'master',updatedAt:timestamp()};
+ await env.withSecurityRulesDisabled(async context=>{await context.firestore().doc('products/managed').set({...product,updatedAt:new Date()});});
+ await assertFails(db('restaurant').doc('products/managed').update({price:1,updatedAt:timestamp()}));
+ await assertFails(db('restaurant').doc('products/managed').update({merchantOfferId:firebase.firestore.FieldValue.delete(),catalogItemId:firebase.firestore.FieldValue.delete(),updatedAt:timestamp()}));
+ await assertFails(db('restaurant').doc('products/forged').set({...product,id:'forged'}));
+ for(const name of ['catalogItems','merchantOffers','catalogPriceHistory','catalogInventoryHistory'])await assertFails(db('restaurant').doc(name+'/forged').set({price:1}));
+});

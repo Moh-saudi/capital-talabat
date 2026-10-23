@@ -100,6 +100,15 @@ export interface ProductOptionGroup {
 }
 
 export interface Product {
+  catalogSpecs?:Record<string,string|number|null>;
+  catalogKind?:"grocery"|"meal"|"produce";
+  catalogVariant?:import("./catalog").CatalogVariant;
+  preparationMinutes?:number|null;
+  expiryDate?:string;
+  catalogItemId?:string;
+  merchantOfferId?:string;
+  variantId?:string;
+  stockQuantity?:number|null;
   imageVariants?: {thumbnail:string;menu:string;original:string};
   sku?: string;
   brand?: string;

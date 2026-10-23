@@ -34,8 +34,8 @@ service cloud.firestore {
     function productValid(d) { return d.keys().hasAll(['id','storeId','storeName','name','description','price','category','imageType','inStock','updatedAt']) && text(d.name,120) && text(d.description,1000) && d.price is number && d.price >= 0 && d.price <= 100000 && d.inStock is bool && exists(/databases/$(database)/documents/stores/$(d.storeId)) && d.updatedAt == request.time; }
     match /products/{id} {
       allow read: if true;
-      allow create: if verified() && productValid(request.resource.data) && (staff().role == 'restaurant' && staff().storeId == request.resource.data.storeId);
-      allow update: if verified() && productValid(request.resource.data) && request.resource.data.storeId == resource.data.storeId && (staff().role == 'restaurant' && staff().storeId == resource.data.storeId);
+      allow create: if verified() && !request.resource.data.keys().hasAny(['merchantOfferId','catalogItemId']) && productValid(request.resource.data) && (staff().role == 'restaurant' && staff().storeId == request.resource.data.storeId);
+      allow update: if verified() && !resource.data.keys().hasAny(['merchantOfferId','catalogItemId']) && !request.resource.data.keys().hasAny(['merchantOfferId','catalogItemId']) && productValid(request.resource.data) && request.resource.data.storeId == resource.data.storeId && (staff().role == 'restaurant' && staff().storeId == resource.data.storeId);
       allow delete: if false;
     }
     match /stores/{id} {
