@@ -5,7 +5,7 @@ import { nextKitchenUpdate, normalizeOrder } from '../../src/utils/orderIntegrat
 import { mobileCors } from '../mobileCors.ts';
 
 const fields:Record<string,string[]>={
-  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','isPopular','options','imageVariants'],
+  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','hasPromotion','isPopular','options','imageVariants'],
   stores:['id','name','nameEn','locationInDistrict','type','category','status','deliveryTime','minOrder','deliveryFee','imageUrl','bannerUrl','logoUrl','logoKey','bannerKey','imageKey','logo','banner','rating','ratingCount'],
   coupons:['code','discountType','value','minOrder','title','description'],staff:['role','name','phone','storeId'],partnerApplications:['status'],jobApplications:['status'],
   orders:['orderStatus','courierId','courierName','courierPhone'],
@@ -15,6 +15,7 @@ const str=(v:any,max:number,required=false)=>typeof v==='string'&&v.length<=max&
 const num=(v:any,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;
 function validate(type:string,id:string,d:any){
   if(type==='products'&&(!str(d.name,120,true)||!str(d.description,1000)||!num(d.price,100000)||typeof d.inStock!=='boolean'||!str(d.storeId,128)||!str(d.category,120,true)))bad('راجع اسم الصنف وسعره ومتجره.');
+  if(type==='products'&&d.hasPromotion!==undefined&&typeof d.hasPromotion!=='boolean')bad('حالة العرض غير صالحة.');
   if(type==='products'&&!d.storeId&&d.inStock)bad('اربط المنتج بمتجر قبل إتاحته للطلب.');
   if(type==='products'&&d.imageVariants!==undefined){
     if(!d.imageVariants||typeof d.imageVariants!=='object'||Array.isArray(d.imageVariants)||Object.keys(d.imageVariants).some(k=>!['thumbnail','menu','original'].includes(k)))bad('مقاسات الصورة غير صالحة.');
