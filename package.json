@@ -26,7 +26,8 @@
     "test:catalog-import": "node --import tsx --test tests/catalog-import.test.ts",
     "test:catalog-hub": "node --import tsx --test tests/catalog-hub.test.ts",
     "test:admin-search": "node --import tsx --test tests/admin-search.test.ts",
-    "test:search-emulator": "firebase emulators:exec --config firebase.emulators.json --only firestore --project demo-capital-talabat \"node --import tsx --test --test-concurrency=1 tests/admin-search.integration.test.ts tests/firestore.security.test.ts\""
+    "test:search-emulator": "firebase emulators:exec --config firebase.emulators.json --only firestore --project demo-capital-talabat \"node --import tsx --test --test-concurrency=1 tests/admin-search.integration.test.ts tests/firestore.security.test.ts\"",
+    "test:catalog-review": "node --import tsx --test tests/catalog-review.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1154.0",

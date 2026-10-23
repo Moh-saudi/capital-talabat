@@ -1,6 +1,6 @@
 import type { Order, Product } from "../types";
 
-export const productCategories: Product["category"][] = ["فطور", "سندوتشات", "سوبر ماركت بالقطعة", "مشروبات", "وجبات خفيفة", "حلويات"];
+export const productCategories: Product["category"][] = ["فطور", "غداء", "عشاء", "خضار", "فاكهة", "سندوتشات", "سوبر ماركت بالقطعة", "مشروبات", "وجبات خفيفة", "حلويات"];
 export const storeCategories = [["breakfast", "فطور"], ["sandwiches", "مطعم وسندوتشات"], ["supermarket", "سوبر ماركت"], ["cafe", "كافيه"], ["desserts", "حلويات"]];
 
 export function catalogPerformance(orders: Order[]) {

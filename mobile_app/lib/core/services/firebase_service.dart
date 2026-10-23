@@ -143,7 +143,7 @@ class FirebaseService {
         .map((snapshot) {
       return snapshot.docs
           .map((doc) => ProductModel.fromFirestore(doc))
-          .where((p) => !p.archived) // استبعاد المنتجات المؤرشفة
+          .where((p) => !p.archived && p.showInApp) // استبعاد المنتجات المؤرشفة
           .toList();
     });
   }

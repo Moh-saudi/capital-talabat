@@ -78,7 +78,7 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
       <div className="admin-breadcrumb"><span>لوحة الإدارة</span><ChevronLeft size={13} /><strong>{current.label}</strong><span className="admin-cairo-date">{new Intl.DateTimeFormat("ar-EG", { timeZone: "Africa/Cairo", weekday: "long", day: "numeric", month: "long" }).format(new Date())}</span></div>
     {tab === "operations" && <OperationsDashboard orders={orders} stores={stores} couriers={couriers} connected={connected} onNavigate={navigate} />}
     {tab === "kitchen" && <KitchenDisplay orders={orders} stores={stores} connected={connected} onChange={updateKitchenStage} />}
-    {tab === "catalog" && <CatalogManager stores={stores} products={products} orders={orders} searchRequest={catalogRequest} />}
+    {tab === "catalog" && <CatalogManager coupons={coupons} stores={stores} products={products} orders={orders} searchRequest={catalogRequest} />}
     {tab === "settings" && <AdminSetupPanel stores={stores} staff={staff} coupons={coupons} orders={orders} onError={onError} defaultOpen />}
     {tab === "management" && (isValidElement(children) ? cloneElement(children as ReactElement<{orderSearchRequest?:{term:string;key:number;kind?:'orders'|'partners'|'jobs'}}>,{orderSearchRequest:orderRequest}) : children)}
     {tab === "users" && <UserManagement stores={stores} searchRequest={userRequest} />}

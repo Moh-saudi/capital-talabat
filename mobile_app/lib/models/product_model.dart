@@ -72,9 +72,20 @@ class ProductModel {
   final String category;
   final String? imageUrl;
   final bool inStock;
+  final bool showInApp;
+  final Map<String, dynamic>? promotion;
   final bool archived;
   final bool isPopular;
-  final String? badge;
+  final String? _badge;
+  String? get badge {
+    final campaign = promotion;
+    if (campaign == null) return _badge;
+    final start = DateTime.tryParse(campaign["startsAt"]?.toString() ?? "");
+    final end = DateTime.tryParse(campaign["endsAt"]?.toString() ?? "");
+    final now = DateTime.now();
+    if (start == null || end == null || now.isBefore(start) || !now.isBefore(end)) return null;
+    return campaign["title"]?.toString();
+  }
   final List<ProductOptionGroup> optionGroups;
   final DateTime? updatedAt;
 
@@ -89,15 +100,17 @@ class ProductModel {
     required this.category,
     this.imageUrl,
     this.inStock = true,
+    this.showInApp = true,
+    this.promotion,
     this.archived = false,
     this.isPopular = false,
-    this.badge,
+    String? badge,
     this.optionGroups = const [],
     this.updatedAt,
-  });
+  }) : _badge = badge;
 
   /// المنتج متاح للطلب فقط إذا كان متوفراً وغير مؤرشف
-  bool get isAvailable => inStock && !archived;
+  bool get isAvailable => inStock && showInApp && !archived;
 
   String get effectiveImageUrl =>
       imageUrl ?? 'https://pub-14521cdfec73fa908fbf7e760fae362a.r2.dev/meals/$id.png';
@@ -167,6 +180,8 @@ class ProductModel {
       category: data['category'] as String? ?? 'وجبات',
       imageUrl: data['imageUrl'] as String?,
       inStock: data['inStock'] as bool? ?? true,
+      showInApp: data['showInApp'] as bool? ?? true,
+      promotion: data['promotion'] is Map ? Map<String, dynamic>.from(data['promotion'] as Map) : null,
       archived: isArchived,
       isPopular: data['isPopular'] as bool? ?? false,
       badge: data['badge'] as String?,

@@ -144,3 +144,9 @@ graph LR
   📁 [`mobile_app/`](./mobile_app/)
 - تم إعداد وتكوين حزم Firebase و Google Services مسبقاً.
 - التحليل البرمجي لتطبيق الموبايل: `No issues found! (0 errors, 0 warnings)`.
+
+## تحديث الكتالوج — 23 أكتوبر 2026
+
+أصبحت الهوية في `catalogItems` وعرض التاجر في `merchantOffers` وإسقاط التطبيق في `products`. أضيف `showInApp` (افتراضي true للتوافق)، وكائن `promotion {title,occasion,startsAt,endsAt,couponCode,terms}` بتواريخ ISO UTC. استبعد `showInApp:false` من قائمة التطبيق ومن الطلب. مرّر `products/{offerId}.id` في السلة؛ لا تمرر معرف الهوية بدل عرض التاجر. لا تقرأ الكتالوج الإداري الخاص مباشرة من عميل الهاتف.
+
+الحملة لا تغيّر السعر بذاتها؛ الكوبون الحالي خصم على السلة بشروطه القائمة. لا تعتبر `hasPromotion/badge` وقت تحديث الإسقاط ساعةً حية؛ احسب نافذة `promotion` عند عرضها. تعديل نموذج Flutter والاشتراك موجود في هذا الفرع ويحتاج إعادة بناء التطبيق. راجع [تفاصيل المراجعة وحدود التسعير والصور](docs/CATALOG_REVIEW_2026-10-23.ar.md).

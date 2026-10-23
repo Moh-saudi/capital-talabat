@@ -1,3 +1,4 @@
+import{promotionData,requirePromotionCoupon}from'../promotion.ts';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { requireAdmin, AdminError, adminError, validId } from '../adminRequest.ts';
 import { auditInTransaction, auditSafe, auditRecord } from '../audit.ts';
@@ -5,7 +6,7 @@ import { nextKitchenUpdate, normalizeOrder } from '../../src/utils/orderIntegrat
 import { mobileCors } from '../mobileCors.ts';
 
 const fields:Record<string,string[]>={
-  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','hasPromotion','isPopular','options','imageVariants'],
+  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','hasPromotion','promotion','showInApp','isPopular','options','imageVariants'],
   stores:['id','name','nameEn','locationInDistrict','type','category','status','deliveryTime','minOrder','deliveryFee','imageUrl','bannerUrl','logoUrl','logoKey','bannerKey','imageKey','logo','banner','rating','ratingCount'],
   coupons:['code','discountType','value','minOrder','title','description'],staff:['role','name','phone','storeId'],partnerApplications:['status'],jobApplications:['status'],
   orders:['orderStatus','courierId','courierName','courierPhone'],
@@ -15,6 +16,8 @@ const str=(v:any,max:number,required=false)=>typeof v==='string'&&v.length<=max&
 const num=(v:any,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;
 function validate(type:string,id:string,d:any){
   if(type==='products'&&(!str(d.name,120,true)||!str(d.description,1000)||!num(d.price,100000)||typeof d.inStock!=='boolean'||!str(d.storeId,128)||!str(d.category,120,true)))bad('راجع اسم الصنف وسعره ومتجره.');
+  if(type==='products'&&d.showInApp!==undefined&&typeof d.showInApp!=='boolean')bad('حالة العرض في التطبيق غير صالحة.');
+  if(type==='products'&&d.promotion!==undefined)promotionData(d.promotion);
   if(type==='products'&&d.hasPromotion!==undefined&&typeof d.hasPromotion!=='boolean')bad('حالة العرض غير صالحة.');
   if(type==='products'&&!d.storeId&&d.inStock)bad('اربط المنتج بمتجر قبل إتاحته للطلب.');
   if(type==='products'&&d.imageVariants!==undefined){
@@ -78,6 +81,7 @@ export default async function handler(req:any,res:any){
       const ref=db.doc(type+'/'+id);const [own,target]=await Promise.all([tx.get(db.doc('admins/'+actor.uid)),tx.get(ref)]);
       if(!own.exists)throw new AdminError(403,'انتهت صلاحية الإدارة.');
       const before=target.data()||null;
+      if(type==='products'&&patch.promotion)await requirePromotionCoupon(tx,db,promotionData(patch.promotion));
       if(type==='products'&&before?.merchantOfferId)throw new AdminError(409,'هذا عرض تاجر مُدار. عدّل مواصفاته وصوره وأسعاره من شاشة الأصناف المشتركة وعروض التجار.');
       let after:any={...(before||{}),...patch};
       if(input.action==='delete'&&!before)throw new AdminError(404,'السجل غير موجود.');

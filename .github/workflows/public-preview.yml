@@ -22,6 +22,7 @@ jobs:
       - run: npm run test:public-service
       - run: npm run test:catalog-import
       - run: npm run test:admin-search
+      - run: npm run test:catalog-review
       - run: npm run test:catalog-hub
       - run: npm run build
         env:

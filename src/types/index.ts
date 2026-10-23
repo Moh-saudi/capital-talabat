@@ -1,3 +1,4 @@
+import type{CatalogPromotion}from'./promotion';
 export type MinistryName =
   | "رئاسة مجلس الوزراء"
   | "وزارة المالية"
@@ -106,6 +107,8 @@ export interface Product {
   preparationMinutes?:number|null;
   expiryDate?:string;
   hasPromotion?:boolean;
+  showInApp?:boolean;
+  promotion?:CatalogPromotion|null;
   catalogItemId?:string;
   merchantOfferId?:string;
   variantId?:string;
@@ -125,6 +128,10 @@ export interface Product {
   originalPrice?: number;
   category:
     | "فطور"
+    | "غداء"
+    | "عشاء"
+    | "خضار"
+    | "فاكهة"
     | "سندوتشات"
     | "سوبر ماركت بالقطعة"
     | "مشروبات"

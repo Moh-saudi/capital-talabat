@@ -101,3 +101,6 @@ test("server only accepts configured cash payment and valid coupons", () => {
   } as Coupon);
   assert.equal(order.total, 75);
 });
+test('hidden products cannot be ordered by sending a stale product ID',()=>{
+ assert.throws(()=>buildOrder(payload(),'customer',new Map([['p1',{...product,showInApp:false}]]),new Map([['s1',store]])),/غير متاح/);
+});

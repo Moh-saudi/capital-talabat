@@ -1,3 +1,4 @@
+import{requirePromotionCoupon}from'./promotion.ts';
 import{randomUUID}from'node:crypto';import{FieldValue}from'firebase-admin/firestore';
 import{AdminError,validId}from'./adminRequest.ts';import{auditInTransaction,auditSafe}from'./audit.ts';
 import{catalogItemData,merchantOfferData,offerId,offerProduct,catalogMerchantSummary}from'./catalogModel.ts';
@@ -6,7 +7,7 @@ const fail=(message:string,status=400)=>{throw new AdminError(status,message);};
 async function owner(tx:any,db:any,actor:any){if(!(await tx.get(db.doc('admins/'+actor.uid))).exists)fail('انتهت صلاحية الإدارة.',403);}
 export async function catalogHub(db:any,actor:any,input:any){
  if(input.action==='catalog-items'){
-  let q=db.collection('catalogItems').orderBy('__name__');if(input.cursor){validId(input.cursor);q=q.startAfter(input.cursor);}const rows=await q.limit(51).get();const items=await Promise.all(rows.docs.slice(0,50).map(async(d:any)=>{const item={id:d.id,...d.data()};if(typeof item.merchantCount!=='number'){const offers=await db.collection('merchantOffers').where('catalogItemId','==',item.id).limit(201).get();Object.assign(item,catalogMerchantSummary(item,offers.docs.map((doc:any)=>doc.data())));}return auditSafe(item);}));return{items,nextCursor:rows.size>50?rows.docs[49].id:null};
+  let q=db.collection('catalogItems').orderBy('__name__');if(input.cursor){validId(input.cursor);q=q.startAfter(input.cursor);}const [rows,count]=await Promise.all([q.limit(51).get(),db.collection('catalogItems').count().get()]);const items=await Promise.all(rows.docs.slice(0,50).map(async(d:any)=>{const item={id:d.id,...d.data()};if(typeof item.merchantCount!=='number'){const offers=await db.collection('merchantOffers').where('catalogItemId','==',item.id).limit(201).get();Object.assign(item,catalogMerchantSummary(item,offers.docs.map((doc:any)=>doc.data())));}return auditSafe(item);}));return{items,totalCount:count.data().count,nextCursor:rows.size>50?rows.docs[49].id:null};
  }
  if(input.action==='catalog-offers'){validId(input.itemId);const [item,rows]=await Promise.all([db.doc('catalogItems/'+input.itemId).get(),db.collection('merchantOffers').where('catalogItemId','==',input.itemId).limit(201).get()]);if(!item.exists)fail('الصنف غير موجود.',404);return{item:{id:item.id,...auditSafe(item.data())},offers:rows.docs.map((d:any)=>({id:d.id,...auditSafe(d.data())}))};}
  if(input.action==='catalog-history'){
@@ -20,7 +21,7 @@ export async function catalogHub(db:any,actor:any,input:any){
  if(input.action==='catalog-master-save'){
   const id=input.id||randomUUID();validId(id);const parsed=catalogItemData(input.data);const ref=db.doc('catalogItems/'+id);
   return db.runTransaction(async(tx:any)=>{
-   await owner(tx,db,actor);const before=(await tx.get(ref)).data()||null;const offers=await tx.get(db.collection('merchantOffers').where('catalogItemId','==',id).limit(201));
+   await owner(tx,db,actor);await requirePromotionCoupon(tx,db,parsed.promotion||null);const before=(await tx.get(ref)).data()||null;const offers=await tx.get(db.collection('merchantOffers').where('catalogItemId','==',id).limit(201));
    if(offers.size>200)fail('عدد العروض يتطلب تحديثًا مجزأً بواسطة مسؤول المنصة.');
    if(before&&input.expectedVersion!==before.version)fail('تغيّر الصنف منذ فتحه. حدّث البيانات ثم أعد المحاولة.',409);
    const after={...parsed,id,version:(before?.version||0)+1,...catalogMerchantSummary({...parsed,id,version:1},offers.docs.map((d:any)=>d.data()))};

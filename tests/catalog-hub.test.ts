@@ -52,3 +52,9 @@ test('table flags pause all offers without resetting merchant settings, and prom
  await assert.rejects(()=>catalogHub(db,actor,{action:'catalog-master-save',id:'item',expectedVersion:2,data:{...input,available:false}}),/تغيّر الصنف/);
  assert.throws(()=>catalogItemData({...input,available:'false'}));assert.throws(()=>catalogItemData({...input,promoted:'true'}));
 });
+test('campaign coupon must exist and hiding from the app preserves offer prices',async()=>{
+ const db=database(),promotion={title:'حملة اختبار',occasion:'مناسبة',startsAt:'2026-01-01T00:00:00Z',endsAt:'2027-01-01T00:00:00Z',couponCode:'EXISTS',terms:'حسب شروط الكوبون'};
+ await assert.rejects(()=>catalogHub(db,actor,{action:'catalog-master-save',id:'promo',data:{...definition(),promotion,promoted:true}}),/كود الخصم غير موجود/);
+ assert.equal(db.data.has('catalogItems/promo'),false);db.data.set('coupons/EXISTS',{code:'EXISTS',discountType:'percent',value:10,minOrder:100});
+ const result=await catalogHub(db,actor,{action:'catalog-master-save',id:'promo',data:{...definition(),promotion,promoted:true,showInApp:false}});assert.equal(result.item.promotion.couponCode,'EXISTS');assert.equal(result.item.showInApp,false);
+});

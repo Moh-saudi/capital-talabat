@@ -11,7 +11,7 @@ export default function PublicCatalog({ onSelect }: { onSelect: (item: AppSelect
   const [products, setProducts] = useState<Product[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   useEffect(() => {
-    const stopProducts=watchCollection<Product>('products', data => setProducts(data.filter(item => !item.archived && item.inStock && item.name && Number.isFinite(item.price)).slice(0,12)), () => setProducts([]), [where('inStock','==',true),limit(24)]);
+    const stopProducts=watchCollection<Product>('products', data => setProducts(data.filter(item => !item.archived && item.showInApp!==false && item.inStock && item.name && Number.isFinite(item.price)).slice(0,12)), () => setProducts([]), [where('inStock','==',true),limit(24)]);
     const stopStores=watchCollection<Store>('stores', data => setStores(data.filter(item => item.name)), () => setStores([]), [where('status','==','open'),limit(12)]);
     return () => {stopProducts();stopStores();};
   }, []);
