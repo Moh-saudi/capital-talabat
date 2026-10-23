@@ -48,9 +48,22 @@ export async function saveCatalogWithImages(
   try {
     for (const image of selected) {
       const file = image.file!;
+      let renditions: Awaited<ReturnType<typeof import('./productImageRenditions').productImageRenditions>> | undefined;
+      if(collection === "products" && image.field === "imageUrl") {
+        const {productImageRenditions}=await import('./productImageRenditions');
+        renditions=await productImageRenditions(file);
+      }
       const target = await uploadCatalogImage(collection, id, file);
       uploaded.push(target.key);
       data[image.field] = target.url;
+      if(renditions){
+        const variants:Record<string,string>={original:target.url};
+        for(const [name,rendition] of Object.entries(renditions)){
+          const result=await uploadCatalogImage(collection,id,rendition);
+          uploaded.push(result.key);variants[name]=result.url;
+        }
+        data.imageVariants=variants;data.imageUrl=variants.menu;
+      }
       if (collection === "stores" && image.field === "bannerUrl") data.imageUrl = target.url;
     }
     await saveRecord(collection, id, data);

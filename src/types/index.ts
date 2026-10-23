@@ -100,6 +100,11 @@ export interface ProductOptionGroup {
 }
 
 export interface Product {
+  imageVariants?: {thumbnail:string;menu:string;original:string};
+  sku?: string;
+  brand?: string;
+  unit?: string;
+  department?: string;
   archived?: boolean;
   id: string;
   storeId: string;

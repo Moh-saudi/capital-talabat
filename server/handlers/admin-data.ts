@@ -5,7 +5,7 @@ import { nextKitchenUpdate, normalizeOrder } from '../../src/utils/orderIntegrat
 import { mobileCors } from '../mobileCors.ts';
 
 const fields:Record<string,string[]>={
-  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','isPopular','options'],
+  products:['id','storeId','storeName','name','description','price','originalPrice','category','imageType','imageUrl','imageKey','inStock','archived','badge','isPopular','options','imageVariants'],
   stores:['id','name','nameEn','locationInDistrict','type','category','status','deliveryTime','minOrder','deliveryFee','imageUrl','bannerUrl','logoUrl','logoKey','bannerKey','imageKey','logo','banner','rating','ratingCount'],
   coupons:['code','discountType','value','minOrder','title','description'],staff:['role','name','phone','storeId'],partnerApplications:['status'],jobApplications:['status'],
   orders:['orderStatus','courierId','courierName','courierPhone'],
@@ -15,6 +15,10 @@ const str=(v:any,max:number,required=false)=>typeof v==='string'&&v.length<=max&
 const num=(v:any,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;
 function validate(type:string,id:string,d:any){
   if(type==='products'&&(!str(d.name,120,true)||!str(d.description,1000)||!num(d.price,100000)||typeof d.inStock!=='boolean'||!str(d.storeId,128,true)||!str(d.category,120,true)))bad('راجع اسم الصنف وسعره ومتجره.');
+  if(type==='products'&&d.imageVariants!==undefined){
+    if(!d.imageVariants||typeof d.imageVariants!=='object'||Array.isArray(d.imageVariants)||Object.keys(d.imageVariants).some(k=>!['thumbnail','menu','original'].includes(k)))bad('مقاسات الصورة غير صالحة.');
+    for(const url of Object.values(d.imageVariants)){try{if(typeof url!=='string'||url.length>2048||new URL(url).protocol!=='https:')bad();}catch{bad('رابط صورة غير صالح.');}}
+  }
   if(type==='products'&&d.originalPrice!==undefined&&(!num(d.originalPrice,100000)||d.originalPrice<d.price))bad('السعر قبل الخصم غير صالح.');
   if(type==='products'&&d.archived===true&&d.inStock!==false)bad('المنتج المؤرشف لا يمكن إتاحته.');
   if(type==='stores'&&(!str(d.name,120,true)||!num(d.minOrder,100000)||!num(d.deliveryFee,1000)||!['open','closed','busy'].includes(d.status)))bad('راجع بيانات المتجر ورسومه.');
@@ -29,6 +33,14 @@ export default async function handler(req:any,res:any){
   let context: Awaited<ReturnType<typeof requireAdmin>>|undefined;
   try{
     const {db,auth,actor}=context=await requireAdmin(req);const input=req.body||{};
+    if(input.action==='catalog-pricing'){
+      validId(input.id);const snapshot=await db.doc('catalogPricing/'+input.id).get();
+      return res.status(200).json({pricing:snapshot.exists?snapshot.data():null});
+    }
+    if(input.action==='catalog-import'){
+      const {importCatalogRow}=await import('../catalogImport.ts');
+      return res.status(200).json(await importCatalogRow(db,actor,input));
+    }
     if(input.action==='session'){
       if(!['open','logout'].includes(input.event))bad();
       await db.collection('auditLogs').add(auditRecord(actor,'admin.workspace.'+input.event,'admins',actor.uid,null,{event:input.event}));
