@@ -41,6 +41,10 @@ try{
  await page.setViewportSize({width:1440,height:960});await name.fill('متجر اختبار التصميم');await dialog.getByLabel('عنوان المتجر',{exact:true}).fill('عنوان اختبار محلي');await dialog.getByLabel('نوع النشاط',{exact:true}).fill('مطعم');await dialog.getByRole('button',{name:'إضافة المتجر',exact:true}).click();await dialog.waitFor({state:'hidden'});
  const saved=await page.evaluate(()=>window.__saved);assert.equal(saved[0],'stores');assert.equal(saved[2].name,'متجر اختبار التصميم');assert.equal(saved[2].locationInDistrict,'عنوان اختبار محلي');
  await page.getByRole('button',{name:'المنتجات',exact:true}).click();
+ const more=page.locator('.catalog-row-more').first();
+ assert.equal(await more.getByRole('button',{name:'أرشفة',exact:true}).isVisible(),false,'secondary actions start collapsed');
+ await more.locator('summary').click();await more.getByRole('button',{name:'أرشفة',exact:true}).waitFor();await more.locator('summary').click();
+ const navIcon=await page.locator('.admin-sidebar nav button svg').first().boundingBox();assert.ok(navIcon.width<=18,'sidebar icons stay compact');
  await page.screenshot({path:'/tmp/admin-catalog-theme-desktop.png'});
  await page.getByRole('button',{name:'استيراد Excel',exact:true}).click();const importer=page.getByRole('dialog',{name:'استيراد منتجات من Excel',exact:true});
  await importer.getByLabel('ملف المنتجات Excel').setInputFiles(new URL('./fixtures/catalog-import.xlsx',import.meta.url).pathname);

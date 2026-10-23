@@ -1,90 +1,72 @@
-/* Semantic visual layer. Status labels and icons remain visible alongside color. */
-.admin-app{--admin-ink:#152b48;--admin-muted:#526780;--admin-line:#dce5ef;--admin-orange:#c64b00;background:#eef2f7;color:var(--admin-ink)}
-.admin-app .admin-content{background:#f3f6fa}
-.admin-app .admin-global-header{border-bottom:3px solid #ff6a00;box-shadow:0 2px 12px #10213f08}
-.admin-app .admin-sidebar{background:#10213f;border-color:#233856;color:#e9f0fc}
-.admin-app .admin-sidebar-heading{color:#d0dcf0;border-bottom:1px solid #ffffff20;padding-bottom:16px}
-.admin-app .admin-sidebar nav button{color:#d0dbec;border:1px solid transparent;min-height:46px}
-.admin-app .admin-sidebar nav button:hover{background:#203857;color:white}
-.admin-app .admin-sidebar nav button[aria-pressed=true]{background:#ff6a00;color:#10213f;border-color:#ff9c57;box-shadow:0 4px 14px #0002}
-.admin-app .admin-sidebar nav button[aria-pressed=true] strong{font-weight:900}
-.admin-app .admin-sidebar nav small,.admin-app .admin-sidebar nav button[aria-pressed=true] small{color:inherit;opacity:.85}
-.admin-app .admin-nav-group{color:#9fb4d0;font-size:11px;letter-spacing:0;margin-top:18px}
-.admin-app .admin-sidebar nav button>svg:first-child{padding:6px;width:31px;height:31px;box-sizing:content-box;border-radius:9px;background:#ffffff0d}
-.admin-app .admin-sidebar nav button[data-section=operations]>svg:first-child{color:#8cbcff}
-.admin-app .admin-sidebar nav button[data-section=kitchen]>svg:first-child{color:#ffc17d}
-.admin-app .admin-sidebar nav button[data-section=catalog]>svg:first-child{color:#a8d7ff}
-.admin-app .admin-sidebar nav button[data-section=users]>svg:first-child{color:#c4b3ff}
-.admin-app .admin-sidebar nav button[data-section=audit]>svg:first-child{color:#76dfd1}
-.admin-app .admin-sidebar nav button[aria-pressed=true]>svg:first-child{color:#10213f;background:#ffffff3b}
-.admin-app .admin-sidebar-location{background:#1b3150;border-color:#2f4564;color:#c8d6e9}
-.admin-app .admin-sidebar-location strong,.admin-app .admin-public-link{color:#d9e5f5}
-.admin-app .admin-connection{background:#423819;color:#ffdf91;border:1px solid #6b5930}
-.admin-app .admin-connection.is-connected{background:#143d3d;color:#9be8d1;border-color:#286257}
-.admin-app .admin-collapse-toggle,.admin-app .admin-menu-close{color:#d4e2f4;background:#ffffff0d;border-color:#ffffff20}
-.admin-app .admin-breadcrumb,.admin-app .admin-breadcrumb strong,.admin-app .admin-cairo-date{color:#536b86}
-.admin-app .ops-heading{padding:16px 18px;background:white;border:1px solid var(--admin-line);border-inline-start:4px solid #ff6a00;border-radius:12px;box-shadow:0 3px 10px #10213f04;margin-bottom:16px}
-.admin-app .admin-eyebrow{color:#a23c00;font-weight:700}
-.admin-app .ops-heading>div>p:last-child{color:#526780;font-size:12px}
-.admin-app .admin-primary,.admin-app .catalog-editor-actions>button[type=submit]{background:#c64b00;border:1px solid #c64b00;color:white;box-shadow:0 3px 8px #c64b001c}
-.admin-app .admin-primary:hover,.admin-app .catalog-editor-actions>button[type=submit]:hover{background:#a83f00;border-color:#a83f00}
-.admin-app button:disabled{opacity:.45;box-shadow:none}
-.admin-app button,.admin-app a{transition:background-color .15s,border-color .15s,box-shadow .15s}
-.admin-app .admin-panel{border-color:#dce5ef;box-shadow:0 3px 12px #10213f04;border-radius:12px;overflow:hidden}
-.admin-app .admin-panel-heading{background:#f8faff;border-bottom:1px solid #dce5ef}
-.admin-app .admin-panel-heading h2{color:#173454}
-.admin-app .admin-panel-heading p,.admin-app .admin-empty p{color:#526780}
-.admin-app .ops-metric{border-top:3px solid var(--metric-color,#4873b6);background:var(--metric-bg,#f1f6ff);border-radius:12px;box-shadow:0 3px 9px #10213f05}
-.admin-app .metric-orange{--metric-color:#c64b00;--metric-bg:#fff5ec}.admin-app .metric-green{--metric-color:#08765c;--metric-bg:#edfaf4}.admin-app .metric-blue{--metric-color:#255bb6;--metric-bg:#edf4ff}.admin-app .metric-purple{--metric-color:#7142af;--metric-bg:#f5f0ff}
-.admin-app .ops-metric>strong{color:var(--metric-color);font-size:30px}.admin-app .ops-metric>p,.admin-app .ops-metric>div>span{color:#465e79}
-.admin-app .catalog-metrics>div{position:relative;border:1px solid #cddff2;border-inline-start:4px solid #2864b5!important;background:#edf5ff!important;border-radius:10px!important;padding:14px 18px!important}
-.admin-app .catalog-metrics>div:nth-child(2){background:#f4f0ff!important;border-color:#ddd2ef;border-inline-start-color:#7650ad!important}
-.admin-app .catalog-metrics>div:nth-child(3){background:#eaf8f1!important;border-color:#cce8db;border-inline-start-color:#08765c!important}
-.admin-app .catalog-metrics>div:nth-child(4){background:#fff4e7!important;border-color:#efdcc3;border-inline-start-color:#a9650c!important}
-.admin-app .catalog-metrics>div strong{color:#184b89!important}.admin-app .catalog-metrics>div:nth-child(2) strong{color:#67419a!important}.admin-app .catalog-metrics>div:nth-child(3) strong{color:#08765c!important}.admin-app .catalog-metrics>div:nth-child(4) strong{color:#955506!important}
-.admin-app .catalog-metrics>div span{color:#405974!important;font-weight:600}
-.admin-app .catalog-tabs{border-bottom:1px solid #ccd8e8;padding-bottom:10px;gap:8px}
-.admin-app .catalog-tabs button[aria-pressed=true]{background:#10213f!important;color:white;border-color:#10213f;box-shadow:0 2px 6px #10213f22}
-.admin-app .catalog-filters,.admin-app .audit-filters,.admin-app .user-toolbar,.admin-app .ops-toolbar{background:#fff;border:1px solid #d3deec;box-shadow:0 2px 8px #10213f04}
-.admin-app input::placeholder,.admin-app textarea::placeholder{color:#657991;opacity:1}
-.admin-app .admin-data-table th{background:#e9eff7;color:#2b496b;font-weight:800;border-bottom:1px solid #cbd9e8}
-.admin-app .admin-data-table td{color:#3e5775;border-top-color:#e3eaf3}
-.admin-app .admin-data-table td strong{color:#172f4e}.admin-app .admin-data-table td small{color:#5c718b}
-.admin-app .admin-data-table tbody tr:nth-child(even){background:#f7f9fd}
-.admin-app .admin-data-table tbody tr:hover td{background:#edf4ff}
-.admin-app .catalog-price{color:#12543f;font-weight:800;font-variant-numeric:tabular-nums}
-.admin-app .admin-status{font-weight:700;border:1px solid transparent;padding:5px 9px}
-.admin-app .status-received{background:#fff1db;color:#8d5007;border-color:#efcf9e}
-.admin-app .status-preparing{background:#e8f0ff;color:#214e9c;border-color:#bcd0f3}
-.admin-app .status-ready{background:#f2eaff;color:#693898;border-color:#d9c3f0}
-.admin-app .status-with_courier{background:#e1f5f9;color:#086278;border-color:#a8d7e1}
-.admin-app .status-delivered{background:#e5f6ed;color:#086145;border-color:#aedcc6}
-.admin-app .status-cancelled{background:#ffebed;color:#a52436;border-color:#f1bdc4}
-.admin-app .catalog-archived{background:#e9edf3;color:#495b71;border-color:#cbd3df}
-.admin-app .compact-row-action{background:#fff;border:1px solid #c7d5e6;color:#304d71;font-weight:600}
-.admin-app .compact-row-action:hover{background:#eaf1fb;border-color:#91acce}
-.admin-app .action-edit{color:#2458a1;background:#edf4ff;border-color:#bdd1ef}
-.admin-app .action-image{color:#69419b;background:#f3edff;border-color:#d6c3ee}
-.admin-app .action-price{color:#086145;background:#eaf8f0;border-color:#b8ddc8}
-.admin-app .action-archive{color:#9e3040;background:#fff0f1;border-color:#eac3c9}
-.admin-app .action-catalog{background:#eaf1ff!important;border-color:#acc4eb!important;color:#254e8a!important;font-weight:800}
-.admin-app .action-import{background:#e8f7ef!important;border-color:#acd7bf!important;color:#16603f!important;font-weight:800}
-.admin-app .catalog-model-explainer{background:#edf3ff;border-color:#c6d7f1;color:#294d7c}
-.admin-app .catalog-variant-tags span{background:#f1ebfc;border-color:#d8c7ef;color:#694395}
-.admin-app .catalog-merchant-count{background:#e8efff;border-color:#acc2ef;color:#204c9d}
-.admin-app .catalog-inline-toggle input:checked{background:#08765c}
-.admin-app .catalog-master-table td:nth-child(5) input:checked{background:#bc4f00}
-.admin-app .catalog-master-table tbody tr.is-selected td{background:#fff4e7;border-top-color:#f1d5b6}
-.admin-app .catalog-inline-photo{background:#fff;border-color:#becde1;width:54px;height:60px}
-.admin-app .catalog-item-cell img{background:white;border:1px solid #d9e2ed;border-radius:8px}
-.admin-app .admin-form-section-title h3{color:#234d7a}.admin-app .admin-form-section-title{border-bottom-color:#d4e1f0}
-.admin-app .admin-form-section{border-color:#d4dfed;border-inline-start:3px solid #5c83b6}
-.admin-app .admin-image-field{background:#f4efff;border-color:#b69bdc}
-.admin-app .audit-note{background:#ebf3ff;color:#254f86;border-color:#bfd3ee}
-.admin-app .audit-diff section:first-child h3{color:#a63142}.admin-app .audit-diff section:last-child h3{color:#08765c}
-.admin-app .audit-diff section:first-child pre{background:#fff3f4;border-color:#e8c6cc}.admin-app .audit-diff section:last-child pre{background:#edf9f2;border-color:#bcdccc}
-.admin-app .ops-stage.is-selected{background:#eaf1ff;border-color:#678bc3;box-shadow:inset 0 -3px #3266b2}
-.admin-app .admin-mobile-bar{background:#10213f;color:white;border-bottom:2px solid #ff6a00}.admin-app .admin-mobile-bar button{color:white}
-.admin-app .admin-footer{color:#526780}
-@media(max-width:700px){.admin-app .ops-heading{padding:13px 12px}.admin-app .catalog-heading-actions{width:100%;justify-content:flex-start}.admin-app .admin-sidebar nav button>svg:first-child{width:20px;height:20px}.admin-app .ops-heading .admin-primary{font-size:12px;gap:7px}.admin-app .catalog-metrics>div{padding:12px!important}.admin-app .admin-global-header{border-bottom-width:2px}}
-@media(prefers-reduced-motion:reduce){.admin-app button,.admin-app a{transition:none}}
+/* Quiet, compact administration. Color communicates state, not decoration. */
+.admin-app{--admin-ink:#20334d;--admin-muted:#586c84;--admin-line:#e1e7ef;--admin-orange:#c65313;background:#f7f8fa;color:var(--admin-ink)}
+.admin-app .admin-content{background:#f7f8fa}
+.admin-app .admin-global-header{border-bottom:1px solid #e1e7ef;box-shadow:none}
+.admin-app .admin-sidebar{background:#fff;border-color:#e1e7ef;color:#53667f;gap:10px}
+.admin-app .admin-sidebar-heading{color:#526680;padding:0 6px 10px;border-bottom:1px solid #edf0f4;font-size:10px}
+.admin-app .admin-sidebar nav{gap:3px}
+.admin-app .admin-sidebar nav button{color:#53667f;padding:8px 9px;gap:9px;min-height:36px;border:0;border-inline-start:2px solid transparent;border-radius:5px;background:transparent;box-shadow:none}
+.admin-app .admin-sidebar nav button:hover{background:#f5f7fa;color:#20334d}
+.admin-app .admin-sidebar nav button[aria-pressed=true]{background:#fff4ec;color:#a64713;border-inline-start-color:#e76b22;box-shadow:none}
+.admin-app .admin-sidebar nav button strong{font-size:11px;font-weight:500;line-height:1.6;white-space:nowrap}
+.admin-app .admin-sidebar nav button[aria-pressed=true] strong{font-weight:700}
+.admin-app .admin-sidebar nav button>svg:first-child{width:16px;height:16px;padding:0;box-sizing:border-box;border-radius:0;background:transparent;color:inherit;flex-shrink:0}
+.admin-app .admin-sidebar nav button>svg:last-child:not(:first-child){width:13px;height:13px}
+.admin-app .admin-nav-group{font-size:10px;color:#7c899b;margin:15px 9px 6px;font-weight:600}
+.admin-app .admin-sidebar-location{background:transparent;border:0;border-top:1px solid #edf0f4;border-radius:0;color:#6c7d92;padding:10px 6px}
+.admin-app .admin-sidebar-location strong,.admin-app .admin-public-link{color:#53667f;font-size:10px}
+.admin-app .admin-connection{background:#fff8e9;color:#7d5d17;padding:7px;border:0;font-size:9px}
+.admin-app .admin-connection.is-connected{background:#f0f8f4;color:#267354}
+.admin-app .admin-collapse-toggle,.admin-app .admin-menu-close{color:#6c7d92;background:transparent;border:0}
+.admin-app .admin-breadcrumb,.admin-app .admin-breadcrumb strong{color:#6a7c92;font-size:10px}
+.admin-app .ops-heading{padding:0 0 10px;background:transparent;border:0;border-bottom:1px solid #e1e7ef;border-radius:0;box-shadow:none;margin:0;min-height:0;gap:12px}
+.admin-app .ops-heading h1{font-size:18px!important;line-height:1.6;letter-spacing:0}
+.admin-app .ops-heading>div>p:last-child{color:#65788f;font-size:11px;margin-top:2px}
+.admin-app .admin-primary{background:#c65313;color:white;border:1px solid #c65313;font-size:11px;min-height:34px;padding:6px 12px;border-radius:6px;box-shadow:none;gap:6px}
+.admin-app .admin-primary:hover{background:#ab460d;border-color:#ab460d}
+.admin-app .catalog-heading-actions{gap:6px}.admin-app .catalog-heading-actions>button{min-height:34px;padding:6px 11px;font-size:11px;border-radius:6px}
+.admin-app .catalog-heading-actions svg{width:15px;height:15px}
+.admin-app .action-catalog{background:#fff!important;border-color:#d8e1ec!important;color:#345577!important}
+.admin-app .action-import{background:#fff!important;border-color:#d8e1ec!important;color:#34604d!important}
+.admin-app .admin-panel{border-color:#e1e7ef;border-radius:8px;box-shadow:none}
+.admin-app .admin-panel-heading{background:#fff;border-bottom:1px solid #edf0f4;padding:10px 13px}
+.admin-app .admin-panel-heading h2{font-size:12px}.admin-app .admin-panel-heading p{font-size:10px;color:#65788f}
+.admin-app .ops-metric{padding:10px 13px;border:1px solid #e1e7ef;border-radius:7px;background:#fff;box-shadow:none}
+.admin-app .ops-metric>strong{font-size:23px;color:#20334d}.admin-app .ops-metric>div>span{font-size:11px;color:#586c84}.admin-app .ops-metric>p{font-size:10px;color:#65788f}
+.admin-app .catalog-metrics{gap:8px}
+.admin-app .catalog-metrics>div{border:1px solid #e1e7ef!important;border-radius:6px!important;background:#fff!important;padding:8px 12px!important;gap:9px;min-height:44px}
+.admin-app .catalog-metrics>div strong{font-size:19px!important;color:#30465f!important;font-weight:700}
+.admin-app .catalog-metrics>div span{font-size:11px!important;color:#63758b!important}
+.admin-app .catalog-tabs{padding-bottom:7px;gap:5px}
+.admin-app .catalog-tabs button{padding:5px 12px;min-height:32px;font-size:12px;background:transparent;border-color:transparent;border-radius:5px}
+.admin-app .catalog-tabs button[aria-pressed=true]{background:#fff3e9!important;color:#994215;border-color:#f1d8c6;box-shadow:none}
+.admin-app .catalog-filters,.admin-app .audit-filters,.admin-app .user-toolbar,.admin-app .ops-toolbar{background:#fff;border:1px solid #e1e7ef;border-radius:7px;padding:9px 11px;box-shadow:none;gap:8px}
+.admin-app .catalog-filters input,.admin-app .catalog-filters select{min-height:34px!important;font-size:11px;padding-top:5px;padding-bottom:5px}
+.admin-app .catalog-results-toolbar{font-size:11px}.admin-app .catalog-view-switch button{font-size:11px;padding:4px 8px}
+.admin-app .admin-data-table{font-size:11px}.admin-app .admin-data-table th{font-size:10px;font-weight:600;background:#f1f4f8;color:#536980;padding:8px 10px;border-bottom:1px solid #dce4ee}
+.admin-app .admin-data-table td{padding:9px 10px;color:#4c627d;line-height:1.65;border-top-color:#eaf0f5}
+.admin-app .admin-data-table td strong,.admin-app .catalog-item-cell h2{font-size:11px;color:#2c435f;font-weight:600}
+.admin-app .admin-data-table td small{font-size:10px;color:#6a7f98;line-height:1.6}
+.admin-app .admin-data-table tbody tr:nth-child(even){background:#fafbfd}.admin-app .admin-data-table tbody tr:hover td{background:#f4f7fb}
+.admin-app .catalog-item-cell{max-width:300px;gap:8px}.admin-app .catalog-thumbnail{width:34px;height:38px;flex-shrink:0}
+.admin-app .catalog-price{color:#30465f;font-weight:600}
+.admin-app .admin-status{font-size:10px;padding:3px 7px;font-weight:500;border-radius:5px}
+.admin-app .status-received{background:#fff3df;color:#8a570e}.admin-app .status-preparing{background:#edf3ff;color:#355f9e}.admin-app .status-ready{background:#f3edfc;color:#7750a0}.admin-app .status-with_courier{background:#eaf5f8;color:#267084}.admin-app .status-delivered{background:#eaf7ef;color:#24714c}.admin-app .status-cancelled{background:#fff0f1;color:#a13845}
+.admin-app .compact-row-action{font-size:10px;min-height:28px;padding:3px 7px;border:1px solid #dce4ee;background:#fff;color:#546d8b;font-weight:500;border-radius:5px;box-shadow:none}
+.admin-app .compact-row-action:hover{border-color:#b0c3da;background:#f4f7fb;color:#284c77}
+.admin-app .action-image{color:#6d5792}.admin-app .action-price{color:#35694e}.admin-app .action-archive{color:#9a5d61}
+.admin-app .catalog-row-actions{gap:4px;min-width:160px}.admin-app .catalog-row-actions button{min-height:28px;gap:4px}.admin-app .catalog-row-actions svg{width:12px;height:12px}
+.admin-app .catalog-model-explainer{padding:9px 12px;font-size:11px;background:#f2f5f9;border-color:#e1e7ef;color:#5a708c;gap:6px}
+.admin-app .catalog-variant-tags span{background:#f4f6fa;border-color:#e1e7ef;color:#60738b}
+.admin-app .catalog-merchant-count{background:#f2f6fc;border-color:#d4e0ef;color:#3f608c}
+.admin-app .catalog-master-table tbody tr.is-selected td{background:#fffaf4}
+.admin-app .catalog-master-toolbar p{font-size:10px}.admin-app .catalog-adopt{padding:11px 13px}
+.admin-app .admin-form-section{border-color:#e1e7ef;border-inline-start:1px solid #e1e7ef}.admin-app .admin-image-field{background:#f8fafc;border-color:#c9d5e3}
+.admin-app .audit-note{background:#f1f6fc;color:#48698d;border-color:#d8e4f2;font-size:11px}
+.admin-app .audit-diff section:first-child h3{color:#9a4c57}.admin-app .audit-diff section:last-child h3{color:#347553}
+.admin-app .admin-footer{color:#7c8b9e}
+@media(min-width:801px){.admin-app .admin-sidebar{width:202px;padding:13px 9px}.admin-app .admin-content{margin-right:202px;padding:14px 18px}.admin-app .sidebar-collapsed .admin-sidebar{width:58px;padding:13px 6px}.admin-app .sidebar-collapsed .admin-content{margin-right:58px}.admin-app .catalog-workspace.space-y-5>:not([hidden])~:not([hidden]){margin-top:10px}}
+@media(max-width:800px){.admin-app .admin-sidebar nav button{min-height:42px}.admin-app .admin-sidebar nav button strong{font-size:12px}.admin-app .admin-mobile-bar{background:#fff;color:#30465f}.admin-app .admin-mobile-bar button{color:#30465f}.admin-app .catalog-heading-actions{justify-content:flex-start;gap:5px}.admin-app .ops-heading{flex-wrap:wrap}.admin-app .ops-heading .admin-primary{font-size:11px;gap:6px}.admin-app .catalog-row-actions button,.admin-app .compact-row-action{min-height:36px}.admin-app .catalog-filters input,.admin-app .catalog-filters select{font-size:16px;min-height:42px!important}.admin-app .catalog-metrics>div{padding:8px 10px!important}}
+.admin-app .catalog-row-more{min-width:0}.admin-app .catalog-row-more summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:5px;min-height:28px}.admin-app .catalog-row-more summary::-webkit-details-marker{display:none}.admin-app .catalog-row-more summary:after{content:'⌄';font-size:12px}.admin-app .catalog-row-more[open]{flex-basis:100%;border-top:1px solid #edf0f4;padding-top:4px}.admin-app .catalog-row-more[open]>summary{width:max-content}.admin-app .catalog-row-more>div{display:flex;flex-wrap:wrap;gap:5px;padding-top:5px}.admin-app .catalog-row-actions{max-width:300px}
+@media(max-width:800px){.admin-app .catalog-row-more summary{min-height:36px}}
+.admin-app .catalog-row-actions{align-items:center}.admin-app .catalog-row-actions>.compact-row-action{align-self:center}.admin-app .catalog-row-more:not([open])>div{display:none}
