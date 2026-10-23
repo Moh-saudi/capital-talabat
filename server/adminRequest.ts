@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { attachAuditContext } from "./audit.ts";
 import { adminServices } from './firebaseAdmin.ts';
 export class AdminError extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } }
@@ -23,7 +24,13 @@ export function adminError(res: any, error: any) {
   if (code.includes('user-not-found')) return res.status(404).json({error:'الحساب غير موجود.'});
   if (code==='9'||code.includes('failed-precondition')) return res.status(503).json({error:'البيانات غير متاحة حاليًا. يرجى المحاولة لاحقًا.'});
   if (code.includes('invalid-')) return res.status(400).json({error:'راجع بيانات الحساب.'});
-  return res.status(503).json({error:'تعذر تنفيذ العملية. يرجى المحاولة لاحقًا أو التواصل مع مسؤول المنصة.'});
+  const incidentId = randomUUID();
+  const permissionDenied = code === '7' || code === '403' || code.includes('permission-denied') || code === 'PERMISSION_DENIED';
+  const diagnosticCode = permissionDenied ? 'ADMIN_DATA_ACCESS_DENIED' : 'ADMIN_SERVICE_FAILED';
+  console.error('Admin service failure', { incidentId, code: diagnosticCode, providerCode: /^[A-Za-z0-9_/-]{1,80}$/.test(code) ? code : 'unknown' });
+  return res.status(503).json({error:permissionDenied
+    ? 'خادم الإدارة لا يملك صلاحية الوصول للبيانات. يجب على مسؤول المشروع مراجعة صلاحيات حساب الخدمة.'
+    : 'تعذر تنفيذ العملية. يرجى المحاولة لاحقًا أو التواصل مع مسؤول المنصة.',code:diagnosticCode,incidentId});
 }
 export function validId(value: unknown): asserts value is string {
   if (typeof value !== 'string' || !/^[A-Za-z0-9_.@+-]{1,128}$/.test(value)) throw new AdminError(400,'معرّف غير صالح.');
