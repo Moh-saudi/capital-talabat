@@ -105,6 +105,7 @@ export interface Product {
   catalogVariant?:import("./catalog").CatalogVariant;
   preparationMinutes?:number|null;
   expiryDate?:string;
+  hasPromotion?:boolean;
   catalogItemId?:string;
   merchantOfferId?:string;
   variantId?:string;

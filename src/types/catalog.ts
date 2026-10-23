@@ -1,6 +1,6 @@
 export type CatalogKind='grocery'|'meal'|'produce';
 export type CatalogVariant={imageUrl?:string;id:string;label:string;unit:string;color:string;size:string;barcode:string;weightGrams:number|null};
-export type CatalogItem={imageVariants?:{thumbnail:string;menu:string;original:string};id:string;name:string;sku:string;brand:string;description:string;imageUrl:string;kind:CatalogKind;variants:CatalogVariant[];specs:Record<string,string|number|null>;archived:boolean;version:number};
+export type CatalogItem={available?:boolean;promoted?:boolean;merchantCount?:number;activeMerchantCount?:number;offerCount?:number;imageVariants?:{thumbnail:string;menu:string;original:string};id:string;name:string;sku:string;brand:string;description:string;imageUrl:string;kind:CatalogKind;variants:CatalogVariant[];specs:Record<string,string|number|null>;archived:boolean;version:number};
 export type MerchantOffer={id:string;catalogItemId:string;storeId:string;storeName:string;variantId:string;price:number|null;stockQuantity:number|null;active:boolean;notes:string;preparationMinutes:number|null;expiryDate:string;version:number};
 export const catalogKindNames:Record<CatalogKind,string>={grocery:'سوبر ماركت ومنتجات',meal:'مطاعم ووجبات',produce:'خضار وفاكهة'};
 export const catalogSpecFields:Record<CatalogKind,{key:string;label:string;number?:boolean}[]>={

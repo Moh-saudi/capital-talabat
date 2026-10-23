@@ -39,3 +39,16 @@ test('clearing an offer price also stops the existing mobile product projection'
  await catalogHub(db,actor,{action:'catalog-offer-save',id,expectedVersion:1,reason:'تسعير افتتاحي',data});assert.equal(db.data.get('products/'+id).inStock,true);
  await catalogHub(db,actor,{action:'catalog-offer-save',id,expectedVersion:2,reason:'مراجعة سعر المورد',data:{...data,price:null,active:false}});assert.equal(db.data.get('products/'+id).inStock,false);
 });
+test('table flags pause all offers without resetting merchant settings, and promotion never changes prices',async()=>{
+ const db=database(),input=definition();await catalogHub(db,actor,{action:'catalog-master-save',id:'item',data:input});
+ await catalogHub(db,actor,{action:'catalog-assign',itemId:'item',variantId:'small',storeIds:['store-a','store-b']});
+ await catalogHub(db,actor,{action:'catalog-assign',itemId:'item',variantId:'large',storeIds:['store-a']});
+ assert.equal(db.data.get('catalogItems/item').merchantCount,2);assert.equal(db.data.get('catalogItems/item').offerCount,3);
+ for(const storeId of ['store-a','store-b'])await catalogHub(db,actor,{action:'catalog-offer-save',id:offerId('item',storeId,'small'),expectedVersion:1,reason:'تسجيل مخزون وتسعير',data:{variantId:'small',price:storeId==='store-a'?20:25,stockQuantity:10,active:true,notes:'',preparationMinutes:null,expiryDate:''}});
+ assert.equal(db.data.get('catalogItems/item').activeMerchantCount,2);
+ const paused=(await catalogHub(db,actor,{action:'catalog-master-save',id:'item',expectedVersion:1,data:{...input,available:false,promoted:true}})).item;
+ assert.equal(paused.merchantCount,2);assert.equal(paused.activeMerchantCount,0);const a=offerId('item','store-a','small');assert.equal(db.data.get('products/'+a).inStock,false);assert.equal(db.data.get('products/'+a).hasPromotion,true);assert.equal(db.data.get('products/'+a).price,20);assert.equal(db.data.get('merchantOffers/'+a).active,true);
+ const enabled=(await catalogHub(db,actor,{action:'catalog-master-save',id:'item',expectedVersion:2,data:{...input,available:true,promoted:false}})).item;assert.equal(enabled.activeMerchantCount,2);assert.equal(db.data.get('products/'+a).inStock,true);assert.equal(db.data.get('products/'+a).hasPromotion,false);
+ await assert.rejects(()=>catalogHub(db,actor,{action:'catalog-master-save',id:'item',expectedVersion:2,data:{...input,available:false}}),/تغيّر الصنف/);
+ assert.throws(()=>catalogItemData({...input,available:'false'}));assert.throws(()=>catalogItemData({...input,promoted:'true'}));
+});
