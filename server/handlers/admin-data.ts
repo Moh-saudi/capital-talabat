@@ -14,7 +14,8 @@ const bad=(message='بيانات غير صالحة.')=>{throw new AdminError(400
 const str=(v:any,max:number,required=false)=>typeof v==='string'&&v.length<=max&&(!required||v.trim().length>0);
 const num=(v:any,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max;
 function validate(type:string,id:string,d:any){
-  if(type==='products'&&(!str(d.name,120,true)||!str(d.description,1000)||!num(d.price,100000)||typeof d.inStock!=='boolean'||!str(d.storeId,128,true)||!str(d.category,120,true)))bad('راجع اسم الصنف وسعره ومتجره.');
+  if(type==='products'&&(!str(d.name,120,true)||!str(d.description,1000)||!num(d.price,100000)||typeof d.inStock!=='boolean'||!str(d.storeId,128)||!str(d.category,120,true)))bad('راجع اسم الصنف وسعره ومتجره.');
+  if(type==='products'&&!d.storeId&&d.inStock)bad('اربط المنتج بمتجر قبل إتاحته للطلب.');
   if(type==='products'&&d.imageVariants!==undefined){
     if(!d.imageVariants||typeof d.imageVariants!=='object'||Array.isArray(d.imageVariants)||Object.keys(d.imageVariants).some(k=>!['thumbnail','menu','original'].includes(k)))bad('مقاسات الصورة غير صالحة.');
     for(const url of Object.values(d.imageVariants)){try{if(typeof url!=='string'||url.length>2048||new URL(url).protocol!=='https:')bad();}catch{bad('رابط صورة غير صالح.');}}
@@ -104,8 +105,8 @@ export default async function handler(req:any,res:any){
         tx.update(db.doc('users/'+id),{...profileChange,updatedAt:FieldValue.serverTimestamp()});
         auditInTransaction(db,tx,actor,'users.role.sync','users',id,user.data(),{...user.data(),...profileChange});
       }else if(type==='products'){
-        if(before&&before.storeId!==after.storeId)bad('لا يمكن نقل الصنف لمتجر آخر.');validId(after.storeId);
-        if(!(await tx.get(db.doc('stores/'+after.storeId))).exists)bad('المتجر غير موجود.');
+        if(before?.storeId&&before.storeId!==after.storeId)bad('لا يمكن نقل الصنف لمتجر آخر.');if(after.storeId)validId(after.storeId);
+        if(after.storeId&&!(await tx.get(db.doc('stores/'+after.storeId))).exists)bad('المتجر غير موجود.');
       }
       if(input.action!=='delete'&&type!=='orders')validate(type,id,after);
       if(input.action==='delete')tx.delete(ref);else tx.set(ref,{...after,updatedAt:FieldValue.serverTimestamp(),...(type==='orders'&&after.orderStatus==='ready'&&before?.orderStatus!=='ready'?{readyAt:FieldValue.serverTimestamp()}:{})});

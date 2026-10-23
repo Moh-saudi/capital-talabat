@@ -21,3 +21,11 @@ test('server rejects forged rows and missing administrator rights without commit
  const db=database(),row=parseCatalogRows(sheet())[0];await assert.rejects(()=>importCatalogRow(db,{uid:'admin'},{storeId:'store',row:{...row,price:null}}));
  await assert.rejects(()=>importCatalogRow(db,{uid:'not-admin'},{storeId:'store',row}));assert.equal([...db.records.keys()].filter(k=>k.startsWith('products/')).length,0);
 });
+test('store is optional: general catalog drafts retain pricing and repeat safely',async()=>{
+ const db=database();db.records.delete('stores/store');const row=parseCatalogRows(sheet())[0],actor={uid:'admin'};
+ const first=await importCatalogRow(db,actor,{row});const product=db.records.get('products/'+first.id);
+ assert.equal(product.storeId,'');assert.equal(product.storeName,'');assert.equal(product.inStock,false);assert.equal(db.records.get('catalogPricing/'+first.id).unitCost,39);
+ assert.equal((await importCatalogRow(db,actor,{row,storeId:''})).status,'skipped');
+ db.records.set('products/'+first.id,{...product,storeId:'assigned-store',storeName:'متجر تم ربطه لاحقًا',inStock:true,imageUrl:'https://example.com/a.webp'});
+ await importCatalogRow(db,actor,{row,storeId:'',updateExisting:true});assert.equal(db.records.get('products/'+first.id).storeId,'assigned-store');assert.equal(db.records.get('products/'+first.id).storeName,'متجر تم ربطه لاحقًا');
+});
