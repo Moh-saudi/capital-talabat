@@ -41,6 +41,7 @@ try{
  await page.setViewportSize({width:1440,height:960});await name.fill('متجر اختبار التصميم');await dialog.getByLabel('عنوان المتجر',{exact:true}).fill('عنوان اختبار محلي');await dialog.getByLabel('نوع النشاط',{exact:true}).fill('مطعم');await dialog.getByRole('button',{name:'إضافة المتجر',exact:true}).click();await dialog.waitFor({state:'hidden'});
  const saved=await page.evaluate(()=>window.__saved);assert.equal(saved[0],'stores');assert.equal(saved[2].name,'متجر اختبار التصميم');assert.equal(saved[2].locationInDistrict,'عنوان اختبار محلي');
  await page.getByRole('button',{name:'المنتجات',exact:true}).click();
+ await page.screenshot({path:'/tmp/admin-catalog-theme-desktop.png'});
  await page.getByRole('button',{name:'استيراد Excel',exact:true}).click();const importer=page.getByRole('dialog',{name:'استيراد منتجات من Excel',exact:true});
  await importer.getByLabel('ملف المنتجات Excel').setInputFiles(new URL('./fixtures/catalog-import.xlsx',import.meta.url).pathname);
  await importer.getByText('3 منتج',{exact:true}).waitFor();await importer.getByText('1 يحتاج تصحيحًا',{exact:true}).waitFor();assert.equal(await importer.getByRole('checkbox',{name:'استيراد TEST-3',exact:true}).isDisabled(),true);

@@ -1,3 +1,4 @@
+import "../admin-theme.css";
 import { createPortal } from "react-dom";
 import { AdminQuickSearch } from "./AdminQuickSearch";
 import { UserManagement } from "./UserManagement";
@@ -44,7 +45,7 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
   const current = sections.find(section => section.id === tab)!;
   const pending = orders.filter(order => order.orderStatus === "received").length;
   useEffect(() => { if (initialManagementTab && initialManagementTab !== "orders") setTab("management"); }, [initialManagementTab]);
-  return <div className={`admin-layout compact-workspace ${collapsed ? "sidebar-collapsed" : ""}`} dir="rtl">
+  return <div data-section={tab} className={`admin-layout compact-workspace ${collapsed ? "sidebar-collapsed" : ""}`} dir="rtl">
     {document.getElementById('admin-header-search')&&createPortal(<AdminQuickSearch orders={orders} products={products} stores={stores} sections={sections} onSelect={(kind,id,label)=>{
       if(kind==='section')navigate(id);
       else if(kind==='order'){setOrderRequest({term:label,key:Date.now()});navigate('management');}
@@ -54,7 +55,7 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
     {menuOpen && <button className="admin-menu-backdrop" aria-label="إغلاق قائمة الإدارة" onClick={() => setMenuOpen(false)} />}
     <aside className={`admin-sidebar ${menuOpen ? "is-open" : ""}`} id="admin-navigation" aria-label="قائمة الإدارة">
       <div className="admin-sidebar-heading"><span>إدارة طلبات العاصمة</span><button className="admin-collapse-toggle" aria-label={collapsed?"توسيع القائمة الجانبية":"طي القائمة الجانبية"} aria-expanded={!collapsed} onClick={toggleSidebar}>{collapsed?<PanelRightOpen size={18}/>:<PanelRightClose size={18}/>}</button><button className="admin-menu-close" aria-label="إغلاق القائمة" onClick={() => setMenuOpen(false)}><X size={18} /></button></div>
-      <nav aria-label="أقسام إدارة التشغيل">{sections.map(({id, label, hint, icon: Icon}) => <div key={id} className="admin-nav-item">{["operations","catalog","audit"].includes(id)&&<p className="admin-nav-group">{id==="operations"?"التشغيل اليومي":id==="catalog"?"إدارة المنصة":"الرقابة والإعدادات"}</p>}<button title={label} aria-label={label} aria-pressed={id === tab} aria-current={id === tab ? "page" : undefined} onClick={() => navigate(id)}><Icon size={20} /><span><strong>{label}</strong><small>{hint}</small></span>{id === "management" && pending > 0 ? <b className="admin-nav-count">{pending}</b> : id === tab ? <ChevronLeft size={15} /> : null}</button></div>)}</nav>
+      <nav aria-label="أقسام إدارة التشغيل">{sections.map(({id, label, hint, icon: Icon}) => <div key={id} className="admin-nav-item">{["operations","catalog","audit"].includes(id)&&<p className="admin-nav-group">{id==="operations"?"التشغيل اليومي":id==="catalog"?"إدارة المنصة":"الرقابة والإعدادات"}</p>}<button data-section={id} title={label} aria-label={label} aria-pressed={id === tab} aria-current={id === tab ? "page" : undefined} onClick={() => navigate(id)}><Icon size={20} /><span><strong>{label}</strong><small>{hint}</small></span>{id === "management" && pending > 0 ? <b className="admin-nav-count">{pending}</b> : id === tab ? <ChevronLeft size={15} /> : null}</button></div>)}</nav>
       <div className="admin-sidebar-location"><MapPin size={17} /><div><strong>الحي الحكومي</strong><small>العاصمة الإدارية الجديدة</small></div></div>
       <a className="admin-public-link" href="/">عرض الموقع الرئيسي <ArrowUpRight size={16} /></a>
       <div className={`admin-connection ${connected ? "is-connected" : ""}`} role="status"><Radio size={16} /><span>{connected ? "متصل بالطلبات الحية" : "جارٍ تأكيد اتصال الطلبات"}</span></div>
