@@ -64,3 +64,8 @@
 @media(min-width:801px){.admin-app .catalog-data-table th{white-space:normal}.admin-app .catalog-data-table td:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.admin-app .catalog-data-table td:nth-child(7)>small{display:none}}
 @media(min-width:801px){.admin-app .catalog-control-bar .catalog-query-input input{min-height:28px;padding:3px 0;font-size:11px}.admin-app .catalog-control-bar .catalog-query-bar>select{min-height:28px;padding:3px 7px;font-size:11px}}
 @media(min-width:801px){.admin-app .admin-layout .admin-sidebar{top:var(--admin-header-height,58px);min-height:0}}
+.admin-app .catalog-inline-description{display:flex;align-items:center;gap:5px;min-width:0;margin-top:2px}
+.admin-app .catalog-master-table .catalog-inline-description input{flex:1;min-width:0;min-height:22px;padding:2px 6px;font-size:10px;color:#687d95}
+.admin-app .catalog-image-search{display:inline-flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;min-height:24px;padding:2px 5px;font-size:10px;color:#45698e;border:1px solid #dce5ef;border-radius:4px;background:#fff;white-space:nowrap;text-decoration:none}
+.admin-app .catalog-image-search:hover{background:#edf4fc;border-color:#b2c9e2}
+@media(max-width:800px){.admin-app .catalog-master-table .catalog-inline-description input{font-size:16px;min-height:42px}.admin-app .catalog-image-search{min-height:36px;font-size:11px}}
