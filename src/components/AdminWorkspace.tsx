@@ -1,10 +1,11 @@
 import {AdminSearchDetails,type SearchTarget} from './AdminSearchDetails';
 import "../admin-theme.css";
+import "../admin-catalog-layout.css";
 import { createPortal } from "react-dom";
 import { AdminQuickSearch } from "./AdminQuickSearch";
 import { UserManagement } from "./UserManagement";
 import { AuditLog } from "./AuditLog";
-import { useEffect, useState, cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import { useEffect, useState, cloneElement, isValidElement, type ReactElement, type ReactNode, type CSSProperties } from "react";
 import type { Order, Store, Product, Coupon } from "../types";
 import { OperationsDashboard, type OperationsCourier } from "./OperationsDashboard";
 import { KitchenDisplay } from "./KitchenDisplay";
@@ -30,6 +31,8 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
 }) {
   const [tab, setTab] = useState(() => window.location.pathname === "/kitchen" ? "kitchen" : sections.some(section => section.id === window.location.hash.slice(1)) ? window.location.hash.slice(1) : "operations");
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('capital-admin-sidebar')==='collapsed');
+  const [headerHeight,setHeaderHeight]=useState(58);
+  useEffect(()=>{const header=document.querySelector<HTMLElement>('.admin-global-header');if(!header)return;const measure=()=>setHeaderHeight(Math.ceil(header.getBoundingClientRect().height));measure();const observer=new ResizeObserver(measure);observer.observe(header);return()=>observer.disconnect();},[]);
   const [searchHost,setSearchHost]=useState<HTMLElement|null>(null);
   useEffect(()=>{setSearchHost(document.getElementById('admin-header-search'));},[]);
   const [searchTarget,setSearchTarget]=useState<SearchTarget|null>(null);
@@ -51,7 +54,7 @@ export function AdminWorkspace({ orders, stores, products, couriers, staff, coup
   const current = sections.find(section => section.id === tab)!;
   const pending = orders.filter(order => order.orderStatus === "received").length;
   useEffect(() => { if (initialManagementTab && initialManagementTab !== "orders") setTab("management"); }, [initialManagementTab]);
-  return <div data-section={tab} className={`admin-layout compact-workspace ${collapsed ? "sidebar-collapsed" : ""}`} dir="rtl">
+  return <div style={{"--admin-header-height":`${headerHeight}px`} as CSSProperties} data-section={tab} className={`admin-layout compact-workspace ${collapsed ? "sidebar-collapsed" : ""}`} dir="rtl">
     {searchHost&&createPortal(<AdminQuickSearch orders={orders} products={products} stores={stores} sections={sections} onSelect={(kind,id,label,meta)=>{
       if(kind==='section')navigate(id);else setSearchTarget({source:kind,id,label,...meta});
     }}/>,searchHost)}
